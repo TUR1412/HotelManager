@@ -145,21 +145,21 @@ def cmd_booking_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
-        bookings = svc.list_bookings()
+        bookings = svc.list_booking_views()
         rows: list[list[str]] = []
         for b in bookings:
             rows.append(
                 [
                     str(b.id),
-                    str(b.room_id),
-                    str(b.guest_id),
+                    b.room_number,
+                    b.guest_email,
                     b.start_date.isoformat(),
                     b.end_date.isoformat(),
                     b.status,
                     b.created_at.isoformat(timespec="seconds"),
                 ]
             )
-        _print_table(["ID", "RoomID", "GuestID", "Start", "End", "状态", "创建时间"], rows)
+        _print_table(["ID", "房间号", "住客邮箱", "Start", "End", "状态", "创建时间"], rows)
         return 0
     finally:
         svc.close()

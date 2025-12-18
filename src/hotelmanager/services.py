@@ -8,7 +8,7 @@ from typing import Iterable
 import sqlite3
 
 from . import db as db_module
-from .domain import Booking, Guest, Room
+from .domain import Booking, BookingView, Guest, Room
 from .errors import BookingConflictError, DatabaseError, NotFoundError, ValidationError
 from .repositories import BookingRepository, GuestRepository, RoomRepository
 
@@ -169,6 +169,9 @@ class HotelManagerService:
 
     def list_bookings(self) -> list[Booking]:
         return BookingRepository(self.conn).list_all()
+
+    def list_booking_views(self) -> list[BookingView]:
+        return BookingRepository(self.conn).list_views()
 
     def cancel_booking(self, booking_id: int) -> Booking:
         _ensure_positive_int(booking_id, "预订ID")

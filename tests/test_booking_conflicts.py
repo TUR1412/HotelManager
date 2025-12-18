@@ -74,3 +74,16 @@ class BookingConflictTests(unittest.TestCase):
                 end_date=date(2025, 12, 22),
             )
 
+    def test_booking_views_include_room_and_guest(self) -> None:
+        booking = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        views = self.svc.list_booking_views()
+        self.assertEqual(len(views), 1)
+        self.assertEqual(views[0].id, booking.id)
+        self.assertEqual(views[0].room_number, "101")
+        self.assertEqual(views[0].guest_email, "alice@example.com")
+

@@ -37,3 +37,14 @@ class Booking:
     status: BookingStatus
     created_at: datetime
 
+
+@dataclass(frozen=True, slots=True)
+class BookingView:
+    id: int
+    room_number: str
+    guest_email: str
+    start_date: date
+    end_date: date
+    status: BookingStatus
+    created_at: datetime
+

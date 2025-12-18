@@ -3,7 +3,7 @@ from __future__ import annotations
 import sqlite3
 from datetime import date, datetime
 
-from .domain import Booking, Guest, Room
+from .domain import Booking, BookingView, Guest, Room
 
 
 def _parse_iso_datetime(value: str) -> datetime:
@@ -239,6 +239,37 @@ class BookingRepository:
                 id=int(r["id"]),
                 room_id=int(r["room_id"]),
                 guest_id=int(r["guest_id"]),
+                start_date=_parse_iso_date(str(r["start_date"])),
+                end_date=_parse_iso_date(str(r["end_date"])),
+                status=str(r["status"]),  # type: ignore[assignment]
+                created_at=_parse_iso_datetime(str(r["created_at"])),
+            )
+            for r in rows
+        ]
+
+    def list_views(self) -> list[BookingView]:
+        rows = self._conn.execute(
+            """
+            SELECT
+                b.id AS id,
+                r.number AS room_number,
+                g.email AS guest_email,
+                b.start_date AS start_date,
+                b.end_date AS end_date,
+                b.status AS status,
+                b.created_at AS created_at
+            FROM bookings b
+            JOIN rooms r ON r.id = b.room_id
+            JOIN guests g ON g.id = b.guest_id
+            ORDER BY b.created_at DESC
+            """
+        ).fetchall()
+
+        return [
+            BookingView(
+                id=int(r["id"]),
+                room_number=str(r["room_number"]),
+                guest_email=str(r["guest_email"]),
                 start_date=_parse_iso_date(str(r["start_date"])),
                 end_date=_parse_iso_date(str(r["end_date"])),
                 status=str(r["status"]),  # type: ignore[assignment]
