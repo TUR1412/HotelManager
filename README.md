@@ -290,6 +290,8 @@ CLI 参数与用法说明见：`docs/CLI.md`。
 
 数据库与迁移策略说明见：`docs/DB.md`。
 
+常见问题见：`docs/FAQ.md`。
+
 示例脚本见：`examples/README.md`。
 
 ## 贡献
