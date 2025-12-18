@@ -288,6 +288,10 @@ bash ./scripts/check.sh
 
 CLI 参数与用法说明见：`docs/CLI.md`。
 
+数据库与迁移策略说明见：`docs/DB.md`。
+
+示例脚本见：`examples/README.md`。
+
 ## 贡献
 
 - 开发约定见：`CONTRIBUTING.md`
