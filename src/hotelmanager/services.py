@@ -46,6 +46,21 @@ def _ensure_non_empty(value: str, field_name: str) -> str:
     return cleaned
 
 
+def _ensure_email(value: str, field_name: str) -> str:
+    email = _ensure_non_empty(value, field_name).strip()
+    if " " in email:
+        raise ValidationError(f"{field_name} 不能包含空格")
+
+    if email.count("@") != 1:
+        raise ValidationError(f"{field_name} 格式不正确：{email}")
+
+    local_part, domain_part = email.split("@")
+    if not local_part or not domain_part or "." not in domain_part:
+        raise ValidationError(f"{field_name} 格式不正确：{email}")
+
+    return email.lower()
+
+
 def _ensure_positive_int(value: int, field_name: str) -> int:
     if value <= 0:
         raise ValidationError(f"{field_name} 必须为正整数")
@@ -132,11 +147,14 @@ class HotelManagerService:
         phone: str | None,
     ) -> Guest:
         full_name = _ensure_non_empty(full_name, "姓名")
-        email = _ensure_non_empty(email, "邮箱")
+        email = _ensure_email(email, "邮箱")
         phone = None if phone is None else phone.strip() or None
 
+        repo = GuestRepository(self.conn)
+        if repo.get_by_email(email) is not None:
+            raise ValidationError(f"邮箱已存在：{email}")
+
         try:
-            repo = GuestRepository(self.conn)
             return repo.create(
                 full_name=full_name,
                 email=email,
@@ -159,7 +177,7 @@ class HotelManagerService:
         end_date: date,
     ) -> Booking:
         room_number = _ensure_non_empty(room_number, "房间号")
-        guest_email = _ensure_non_empty(guest_email, "住客邮箱")
+        guest_email = _ensure_email(guest_email, "住客邮箱")
 
         if end_date <= start_date:
             raise ValidationError("退房日期必须晚于入住日期（end > start）")

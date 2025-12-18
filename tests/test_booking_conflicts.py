@@ -40,6 +40,15 @@ class BookingConflictTests(unittest.TestCase):
                 end_date=date(2025, 12, 23),
             )
 
+    def test_booking_allows_case_insensitive_guest_email(self) -> None:
+        booking = self.svc.create_booking(
+            room_number="101",
+            guest_email="ALICE@EXAMPLE.COM",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        self.assertEqual(booking.room_id, 1)
+
     def test_cancel_makes_slot_available(self) -> None:
         booking = self.svc.create_booking(
             room_number="101",
@@ -73,6 +82,14 @@ class BookingConflictTests(unittest.TestCase):
                 start_date=date(2025, 12, 22),
                 end_date=date(2025, 12, 22),
             )
+
+    def test_invalid_email_is_rejected(self) -> None:
+        with self.assertRaises(ValidationError):
+            self.svc.add_guest(full_name="Bob", email="not-an-email", phone=None)
+
+    def test_duplicate_email_is_case_insensitive(self) -> None:
+        with self.assertRaises(ValidationError):
+            self.svc.add_guest(full_name="Alice2", email="ALICE@EXAMPLE.COM", phone=None)
 
     def test_booking_views_include_room_and_guest(self) -> None:
         booking = self.svc.create_booking(

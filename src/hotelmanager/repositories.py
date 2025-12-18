@@ -136,7 +136,7 @@ class GuestRepository:
 
     def get_by_email(self, email: str) -> Guest | None:
         row = self._conn.execute(
-            "SELECT id, full_name, email, phone, created_at FROM guests WHERE email = ?",
+            "SELECT id, full_name, email, phone, created_at FROM guests WHERE lower(email) = lower(?)",
             (email,),
         ).fetchone()
         if row is None:
