@@ -175,3 +175,5 @@ PYTHONPATH=src python -m compileall -q src tests
 ## 设计与架构
 
 设计取舍与分层结构说明见：`docs/ARCHITECTURE.md`。
+
+CLI 参数与用法说明见：`docs/CLI.md`。
