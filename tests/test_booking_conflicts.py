@@ -290,3 +290,25 @@ class BookingConflictTests(unittest.TestCase):
         view2 = self.svc.get_booking_view(booking2.id)
         self.assertEqual(view2.start_date, date(2025, 12, 22))
         self.assertEqual(view2.end_date, date(2025, 12, 24))
+
+    def test_booking_extend_detects_conflict(self) -> None:
+        booking2 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 22),
+            end_date=date(2025, 12, 24),
+        )
+        booking3 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 24),
+            end_date=date(2025, 12, 26),
+        )
+
+        with self.assertRaises(BookingConflictError):
+            self.svc.extend_booking(booking_id=booking2.id, end_date=date(2025, 12, 25))
+
+        # 原预订保持不变
+        view2 = self.svc.get_booking_view(booking2.id)
+        self.assertEqual(view2.start_date, date(2025, 12, 22))
+        self.assertEqual(view2.end_date, date(2025, 12, 24))
