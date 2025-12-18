@@ -140,6 +140,52 @@ def _migrate_legacy_schema(conn: sqlite3.Connection) -> None:
         ) from e
 
 
+def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+    row = conn.execute(
+        """
+        SELECT 1
+        FROM sqlite_master
+        WHERE type = 'table' AND name = ?
+        LIMIT 1
+        """,
+        (table,),
+    ).fetchone()
+    return row is not None
+
+
+def _validate_schema(conn: sqlite3.Connection) -> None:
+    """
+    结构校验：比起后续在业务逻辑里“莫名其妙报错”，更早、更明确地给出可行动提示。
+    """
+    required_columns: dict[str, set[str]] = {
+        "rooms": {"id", "number", "room_type", "capacity", "price_per_night_cents", "status"},
+        "guests": {"id", "full_name", "email", "phone", "created_at"},
+        "bookings": {
+            "id",
+            "room_id",
+            "guest_id",
+            "start_date",
+            "end_date",
+            "price_per_night_cents",
+            "status",
+            "created_at",
+        },
+    }
+
+    for table, required in required_columns.items():
+        if not _table_exists(conn, table):
+            raise DatabaseError(f"数据库缺少必要的数据表：{table}。请先运行 `init` 或删除损坏的 db 文件。")
+
+        rows = conn.execute(f"PRAGMA table_info({table});").fetchall()
+        columns = {str(r['name']) for r in rows}
+        missing = sorted(required - columns)
+        if missing:
+            raise DatabaseError(
+                f"数据库表 {table} 缺少必要字段：{', '.join(missing)}。"
+                "这通常意味着 db 文件来自旧版本或被外部工具改坏，请备份后重新初始化或升级迁移。"
+            )
+
+
 def connect(db_path: str) -> sqlite3.Connection:
     if db_path != ":memory:":
         path = Path(db_path).expanduser()
@@ -172,6 +218,7 @@ def connect(db_path: str) -> sqlite3.Connection:
 def init_db(conn: sqlite3.Connection) -> None:
     conn.executescript(SCHEMA_SQL)
     _migrate_legacy_schema(conn)
+    _validate_schema(conn)
 
     current = _get_user_version(conn)
     if current == 0:
