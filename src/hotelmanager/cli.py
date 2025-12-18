@@ -124,6 +124,27 @@ def cmd_room_status(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_room_show(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        r = svc.get_room_by_number(args.number)
+        _print_table(
+            ["字段", "值"],
+            [
+                ["ID", str(r.id)],
+                ["房间号", r.number],
+                ["房型", r.room_type],
+                ["容量", str(r.capacity)],
+                ["每晚价格", format_cents(r.price_per_night_cents)],
+                ["状态", r.status],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_guest_add(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -313,6 +334,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="目标状态",
     )
     p_room_status.set_defaults(func=cmd_room_status)
+
+    p_room_show = room_sub.add_parser("show", parents=[sub_common], help="查看房间详情")
+    p_room_show.add_argument("--number", required=True, help="房间号（如 101）")
+    p_room_show.set_defaults(func=cmd_room_show)
 
     # guest
     p_guest = sub.add_parser("guest", help="住客管理")

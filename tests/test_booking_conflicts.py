@@ -108,6 +108,11 @@ class BookingConflictTests(unittest.TestCase):
         g = self.svc.get_guest_by_email("ALICE@EXAMPLE.COM")
         self.assertEqual(g.email, "alice@example.com")
 
+    def test_get_room_by_number(self) -> None:
+        r = self.svc.get_room_by_number("101")
+        self.assertEqual(r.number, "101")
+        self.assertEqual(r.status, "active")
+
     def test_maintenance_room_rejects_booking(self) -> None:
         self.svc.set_room_status(number="101", status="maintenance")
         with self.assertRaises(ValidationError):

@@ -128,6 +128,13 @@ class HotelManagerService:
     def list_rooms(self) -> list[Room]:
         return RoomRepository(self.conn).list_all()
 
+    def get_room_by_number(self, number: str) -> Room:
+        number = _ensure_non_empty(number, "房间号")
+        room = RoomRepository(self.conn).get_by_number(number)
+        if room is None:
+            raise NotFoundError(f"房间不存在：{number}")
+        return room
+
     def set_room_status(self, *, number: str, status: str) -> Room:
         number = _ensure_non_empty(number, "房间号")
         if status not in ("active", "maintenance"):
