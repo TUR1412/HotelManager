@@ -104,6 +104,10 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(views[0].room_number, "101")
         self.assertEqual(views[0].guest_email, "alice@example.com")
 
+    def test_get_guest_by_email_case_insensitive(self) -> None:
+        g = self.svc.get_guest_by_email("ALICE@EXAMPLE.COM")
+        self.assertEqual(g.email, "alice@example.com")
+
     def test_maintenance_room_rejects_booking(self) -> None:
         self.svc.set_room_status(number="101", status="maintenance")
         with self.assertRaises(ValidationError):

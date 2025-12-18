@@ -93,6 +93,12 @@ python -m hotelmanager guest list --db hotelmanager.db
 python -m hotelmanager booking list --db hotelmanager.db
 ```
 
+查看某个住客详情：
+
+```bash
+python -m hotelmanager guest show --email "alice@example.com" --db hotelmanager.db
+```
+
 查看某条预订详情：
 
 ```bash

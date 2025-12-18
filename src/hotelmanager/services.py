@@ -167,6 +167,13 @@ class HotelManagerService:
     def list_guests(self) -> list[Guest]:
         return GuestRepository(self.conn).list_all()
 
+    def get_guest_by_email(self, email: str) -> Guest:
+        email = _ensure_email(email, "邮箱")
+        guest = GuestRepository(self.conn).get_by_email(email)
+        if guest is None:
+            raise NotFoundError(f"住客不存在：{email}")
+        return guest
+
     # Bookings
     def create_booking(
         self,

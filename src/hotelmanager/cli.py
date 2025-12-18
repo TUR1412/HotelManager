@@ -157,6 +157,26 @@ def cmd_guest_list(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_guest_show(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        g = svc.get_guest_by_email(args.email)
+        _print_table(
+            ["字段", "值"],
+            [
+                ["ID", str(g.id)],
+                ["姓名", g.full_name],
+                ["邮箱", g.email],
+                ["电话", g.phone or ""],
+                ["创建时间", g.created_at.isoformat(timespec="seconds")],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_booking_create(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -306,6 +326,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_guest_list = guest_sub.add_parser("list", parents=[sub_common], help="查看住客列表")
     p_guest_list.set_defaults(func=cmd_guest_list)
+
+    p_guest_show = guest_sub.add_parser("show", parents=[sub_common], help="查看住客详情")
+    p_guest_show.add_argument("--email", required=True, help="住客邮箱")
+    p_guest_show.set_defaults(func=cmd_guest_show)
 
     # booking
     p_booking = sub.add_parser("booking", help="预订管理")
