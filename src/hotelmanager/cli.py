@@ -145,6 +145,20 @@ def cmd_room_show(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_room_price(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        room = svc.set_room_price(
+            number=args.number,
+            price_per_night_cents=parse_money_to_cents(args.price),
+        )
+        print(f"已更新房价：房间号={room.number}  每晚价格={format_cents(room.price_per_night_cents)}")
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_guest_add(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -338,6 +352,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_room_show = room_sub.add_parser("show", parents=[sub_common], help="查看房间详情")
     p_room_show.add_argument("--number", required=True, help="房间号（如 101）")
     p_room_show.set_defaults(func=cmd_room_show)
+
+    p_room_price = room_sub.add_parser("price", parents=[sub_common], help="设置房间每晚价格")
+    p_room_price.add_argument("--number", required=True, help="房间号（如 101）")
+    p_room_price.add_argument("--price", required=True, help="每晚价格（示例：399.00）")
+    p_room_price.set_defaults(func=cmd_room_price)
 
     # guest
     p_guest = sub.add_parser("guest", help="住客管理")

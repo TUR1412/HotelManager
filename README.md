@@ -73,6 +73,12 @@ python -m hotelmanager room add --number 101 --type single --capacity 1 --price 
 python -m hotelmanager room status --number 101 --status maintenance --db hotelmanager.db
 ```
 
+设置房间价格：
+
+```bash
+python -m hotelmanager room price --number 101 --price 499.00 --db hotelmanager.db
+```
+
 新增住客：
 
 ```bash

@@ -145,6 +145,16 @@ class HotelManagerService:
         except LookupError as e:
             raise NotFoundError(f"房间不存在：{number}") from e
 
+    def set_room_price(self, *, number: str, price_per_night_cents: int) -> Room:
+        number = _ensure_non_empty(number, "房间号")
+        if price_per_night_cents < 0:
+            raise ValidationError("价格不能为负数")
+
+        try:
+            return RoomRepository(self.conn).set_price_by_number(number, price_per_night_cents)
+        except LookupError as e:
+            raise NotFoundError(f"房间不存在：{number}") from e
+
     # Guests
     def add_guest(
         self,

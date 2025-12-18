@@ -113,6 +113,10 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(r.number, "101")
         self.assertEqual(r.status, "active")
 
+    def test_set_room_price(self) -> None:
+        updated = self.svc.set_room_price(number="101", price_per_night_cents=49900)
+        self.assertEqual(updated.price_per_night_cents, 49900)
+
     def test_maintenance_room_rejects_booking(self) -> None:
         self.svc.set_room_status(number="101", status="maintenance")
         with self.assertRaises(ValidationError):
