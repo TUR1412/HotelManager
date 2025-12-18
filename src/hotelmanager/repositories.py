@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 import sqlite3
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 from .domain import Booking, BookingView, Guest, Room
 
 
 def _parse_iso_datetime(value: str) -> datetime:
-    return datetime.fromisoformat(value)
+    dt = datetime.fromisoformat(value)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone(timezone.utc).replace(tzinfo=None)
+    return dt
 
 
 def _parse_iso_date(value: str) -> date:

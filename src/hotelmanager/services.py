@@ -24,7 +24,8 @@ class DbInfo:
 
 
 def now_utc() -> datetime:
-    return datetime.now(tz=timezone.utc).replace(microsecond=0)
+    # 统一存储：UTC 但以 naive datetime 写入（避免“naive/aware 混用”导致比较时报错）。
+    return datetime.now(tz=timezone.utc).replace(microsecond=0, tzinfo=None)
 
 
 def parse_date(value: str) -> date:
