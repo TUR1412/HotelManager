@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import sqlite3
 import sys
 import traceback
 import unicodedata
@@ -549,6 +550,21 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     except HotelManagerError as e:
         print(f"错误：{e}", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            traceback.print_exc()
+        return 2
+    except sqlite3.Error as e:
+        msg = str(e)
+        lower = msg.lower()
+        suggestion = "请运行 `doctor` 检查数据库状态。"
+        if "locked" in lower:
+            suggestion = "数据库被占用（locked）。请关闭其他占用该 db 的进程后重试，或稍后再试。"
+        elif "readonly" in lower:
+            suggestion = "数据库为只读。请检查文件权限，或将 db 放到可写目录。"
+        elif "no such table" in lower:
+            suggestion = "数据库缺少表。请先运行 `init` 初始化数据库。"
+
+        print(f"数据库错误：{msg}\n建议：{suggestion}", file=sys.stderr)
         if getattr(args, "verbose", False):
             traceback.print_exc()
         return 2
