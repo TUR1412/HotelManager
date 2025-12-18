@@ -119,3 +119,6 @@ PYTHONPATH=src python -m compileall -q src tests
 └─ Task_Status.md
 ```
 
+## 设计与架构
+
+设计取舍与分层结构说明见：`docs/ARCHITECTURE.md`。
