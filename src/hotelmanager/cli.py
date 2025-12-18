@@ -269,10 +269,14 @@ def cmd_booking_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
+        overlap_start = None if args.date_from is None else parse_date(args.date_from)
+        overlap_end = None if args.date_to is None else parse_date(args.date_to)
         bookings = svc.list_booking_views_filtered(
             room_number=args.room,
             guest_email=args.guest_email,
             status=args.status,
+            overlap_start=overlap_start,
+            overlap_end=overlap_end,
         )
         rows: list[list[str]] = []
         for b in bookings:
@@ -574,6 +578,18 @@ def build_parser() -> argparse.ArgumentParser:
     p_booking_list = booking_sub.add_parser("list", parents=[sub_common], help="查看预订列表")
     p_booking_list.add_argument("--room", default=None, help="按房间号过滤（可选）")
     p_booking_list.add_argument("--guest-email", default=None, help="按住客邮箱过滤（可选）")
+    p_booking_list.add_argument(
+        "--from",
+        dest="date_from",
+        default=None,
+        help="按日期区间过滤（筛选与该区间重叠的预订）：from YYYY-MM-DD（可选，需要配合 --to）",
+    )
+    p_booking_list.add_argument(
+        "--to",
+        dest="date_to",
+        default=None,
+        help="按日期区间过滤（筛选与该区间重叠的预订）：to YYYY-MM-DD（可选，需要配合 --from）",
+    )
     p_booking_list.add_argument(
         "--status",
         default=None,

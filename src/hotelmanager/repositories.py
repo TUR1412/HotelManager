@@ -448,6 +448,8 @@ class BookingRepository:
         room_number: str | None = None,
         guest_email: str | None = None,
         status: str | None = None,
+        overlap_start: date | None = None,
+        overlap_end: date | None = None,
     ) -> list[BookingView]:
         conditions: list[str] = []
         params: list[object] = []
@@ -460,6 +462,10 @@ class BookingRepository:
         if status is not None:
             conditions.append("b.status = ?")
             params.append(status)
+        if overlap_start is not None and overlap_end is not None:
+            conditions.append("NOT (b.end_date <= ? OR b.start_date >= ?)")
+            params.append(overlap_start.isoformat())
+            params.append(overlap_end.isoformat())
 
         where_clause = "" if not conditions else "WHERE " + " AND ".join(conditions)
         query = f"""

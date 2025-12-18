@@ -359,6 +359,8 @@ class HotelManagerService:
         room_number: str | None = None,
         guest_email: str | None = None,
         status: str | None = None,
+        overlap_start: date | None = None,
+        overlap_end: date | None = None,
     ) -> list[BookingView]:
         if room_number is not None:
             room_number = _ensure_non_empty(room_number, "房间号")
@@ -366,10 +368,16 @@ class HotelManagerService:
             guest_email = _ensure_email(guest_email, "住客邮箱")
         if status is not None and status not in ("reserved", "cancelled"):
             raise ValidationError(f"未知预订状态：{status}")
+        if (overlap_start is None) != (overlap_end is None):
+            raise ValidationError("日期过滤必须同时提供 overlap_start 与 overlap_end（闭开区间 [start, end)）")
+        if overlap_start is not None and overlap_end is not None and overlap_end <= overlap_start:
+            raise ValidationError("日期过滤区间不合法：overlap_end 必须晚于 overlap_start")
         return BookingRepository(self.conn).list_views(
             room_number=room_number,
             guest_email=guest_email,
             status=status,
+            overlap_start=overlap_start,
+            overlap_end=overlap_end,
         )
 
     def cancel_booking(self, booking_id: int) -> Booking:

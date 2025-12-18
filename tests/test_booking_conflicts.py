@@ -212,6 +212,32 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(view.room_number, "101")
         self.assertEqual(view.guest_email, "alice@example.com")
 
+    def test_booking_list_can_filter_by_overlap_date_range(self) -> None:
+        b1 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        b2 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 22),
+            end_date=date(2025, 12, 24),
+        )
+
+        only_b1 = self.svc.list_booking_views_filtered(
+            overlap_start=date(2025, 12, 20),
+            overlap_end=date(2025, 12, 22),
+        )
+        self.assertEqual([b.id for b in only_b1], [b1.id])
+
+        both = self.svc.list_booking_views_filtered(
+            overlap_start=date(2025, 12, 21),
+            overlap_end=date(2025, 12, 23),
+        )
+        self.assertCountEqual([b.id for b in both], [b1.id, b2.id])
+
     def test_booking_price_is_snapshot(self) -> None:
         booking = self.svc.create_booking(
             room_number="101",
