@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 文档与常见问题（FAQ）
+    url: https://github.com/TUR1412/HotelManager/blob/main/docs/FAQ.md
+    about: 提交 Issue 前建议先看 FAQ，很多问题可以快速自助解决。
+  - name: CLI 使用说明
+    url: https://github.com/TUR1412/HotelManager/blob/main/docs/CLI.md
+    about: CLI 参数与示例用法。
+
