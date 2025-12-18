@@ -258,9 +258,27 @@ class BookingRepository:
             for r in rows
         ]
 
-    def list_views(self) -> list[BookingView]:
-        rows = self._conn.execute(
-            """
+    def list_views(
+        self,
+        *,
+        room_number: str | None = None,
+        guest_email: str | None = None,
+        status: str | None = None,
+    ) -> list[BookingView]:
+        conditions: list[str] = []
+        params: list[object] = []
+        if room_number is not None:
+            conditions.append("r.number = ?")
+            params.append(room_number)
+        if guest_email is not None:
+            conditions.append("lower(g.email) = lower(?)")
+            params.append(guest_email)
+        if status is not None:
+            conditions.append("b.status = ?")
+            params.append(status)
+
+        where_clause = "" if not conditions else "WHERE " + " AND ".join(conditions)
+        query = f"""
             SELECT
                 b.id AS id,
                 r.number AS room_number,
@@ -272,9 +290,10 @@ class BookingRepository:
             FROM bookings b
             JOIN rooms r ON r.id = b.room_id
             JOIN guests g ON g.id = b.guest_id
+            {where_clause}
             ORDER BY b.created_at DESC
-            """
-        ).fetchall()
+        """
+        rows = self._conn.execute(query, params).fetchall()
 
         return [
             BookingView(

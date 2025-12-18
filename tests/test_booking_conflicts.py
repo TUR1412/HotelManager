@@ -131,3 +131,39 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(stats2.booking_count, 1)
         self.assertEqual(stats2.reserved_booking_count, 1)
 
+    def test_booking_views_can_be_filtered(self) -> None:
+        self.svc.add_room(
+            number="102",
+            room_type="double",
+            capacity=2,
+            price_per_night_cents=59900,
+            status="active",
+        )
+        self.svc.add_guest(full_name="Bob", email="bob@example.com", phone=None)
+
+        booking1 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        booking2 = self.svc.create_booking(
+            room_number="102",
+            guest_email="bob@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        self.svc.cancel_booking(booking1.id)
+
+        room_101 = self.svc.list_booking_views_filtered(room_number="101")
+        self.assertEqual([b.id for b in room_101], [booking1.id])
+
+        guest_bob = self.svc.list_booking_views_filtered(guest_email="BOB@EXAMPLE.COM")
+        self.assertEqual([b.id for b in guest_bob], [booking2.id])
+
+        reserved_only = self.svc.list_booking_views_filtered(status="reserved")
+        self.assertEqual([b.id for b in reserved_only], [booking2.id])
+
+        cancelled_only = self.svc.list_booking_views_filtered(status="cancelled")
+        self.assertEqual([b.id for b in cancelled_only], [booking1.id])
+

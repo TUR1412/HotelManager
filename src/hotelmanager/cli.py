@@ -183,7 +183,11 @@ def cmd_booking_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
-        bookings = svc.list_booking_views()
+        bookings = svc.list_booking_views_filtered(
+            room_number=args.room,
+            guest_email=args.guest_email,
+            status=args.status,
+        )
         rows: list[list[str]] = []
         for b in bookings:
             rows.append(
@@ -293,6 +297,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_booking_create.set_defaults(func=cmd_booking_create)
 
     p_booking_list = booking_sub.add_parser("list", parents=[sub_common], help="查看预订列表")
+    p_booking_list.add_argument("--room", default=None, help="按房间号过滤（可选）")
+    p_booking_list.add_argument("--guest-email", default=None, help="按住客邮箱过滤（可选）")
+    p_booking_list.add_argument(
+        "--status",
+        default=None,
+        choices=["reserved", "cancelled"],
+        help="按预订状态过滤（可选）",
+    )
     p_booking_list.set_defaults(func=cmd_booking_list)
 
     p_booking_cancel = booking_sub.add_parser("cancel", parents=[sub_common], help="取消预订")

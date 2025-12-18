@@ -76,6 +76,13 @@ python -m hotelmanager guest list --db hotelmanager.db
 python -m hotelmanager booking list --db hotelmanager.db
 ```
 
+按条件筛选预订：
+
+```bash
+python -m hotelmanager booking list --room 101 --status reserved --db hotelmanager.db
+python -m hotelmanager booking list --guest-email "alice@example.com" --db hotelmanager.db
+```
+
 取消预订：
 
 ```bash

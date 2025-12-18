@@ -213,7 +213,26 @@ class HotelManagerService:
         return BookingRepository(self.conn).list_all()
 
     def list_booking_views(self) -> list[BookingView]:
-        return BookingRepository(self.conn).list_views()
+        return self.list_booking_views_filtered()
+
+    def list_booking_views_filtered(
+        self,
+        *,
+        room_number: str | None = None,
+        guest_email: str | None = None,
+        status: str | None = None,
+    ) -> list[BookingView]:
+        if room_number is not None:
+            room_number = _ensure_non_empty(room_number, "房间号")
+        if guest_email is not None:
+            guest_email = _ensure_email(guest_email, "住客邮箱")
+        if status is not None and status not in ("reserved", "cancelled"):
+            raise ValidationError(f"未知预订状态：{status}")
+        return BookingRepository(self.conn).list_views(
+            room_number=room_number,
+            guest_email=guest_email,
+            status=status,
+        )
 
     def cancel_booking(self, booking_id: int) -> Booking:
         _ensure_positive_int(booking_id, "预订ID")
