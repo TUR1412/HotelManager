@@ -137,6 +137,28 @@ class BookingConflictTests(unittest.TestCase):
         maintenance_rooms = self.svc.list_rooms_filtered(status="maintenance")
         self.assertEqual([r.number for r in maintenance_rooms], ["201"])
 
+    def test_room_list_can_filter_by_capacity_and_type(self) -> None:
+        self.svc.add_room(
+            number="201",
+            room_type="suite",
+            capacity=2,
+            price_per_night_cents=99900,
+            status="active",
+        )
+        self.svc.add_room(
+            number="202",
+            room_type="double",
+            capacity=2,
+            price_per_night_cents=59900,
+            status="active",
+        )
+
+        cap2 = self.svc.list_rooms_filtered(status="active", min_capacity=2)
+        self.assertCountEqual([r.number for r in cap2], ["201", "202"])
+
+        suites = self.svc.list_rooms_filtered(status=None, room_type="SUITE")
+        self.assertEqual([r.number for r in suites], ["201"])
+
     def test_maintenance_room_rejects_booking(self) -> None:
         self.svc.set_room_status(number="101", status="maintenance")
         with self.assertRaises(ValidationError):

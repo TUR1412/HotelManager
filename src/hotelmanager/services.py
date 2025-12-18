@@ -207,10 +207,20 @@ class HotelManagerService:
     def list_rooms(self) -> list[Room]:
         return RoomRepository(self.conn).list_all()
 
-    def list_rooms_filtered(self, *, status: str | None) -> list[Room]:
+    def list_rooms_filtered(
+        self,
+        *,
+        status: str | None,
+        min_capacity: int | None = None,
+        room_type: str | None = None,
+    ) -> list[Room]:
         if status is not None and status not in ("active", "maintenance"):
             raise ValidationError(f"未知房间状态：{status}")
-        return RoomRepository(self.conn).list_filtered(status=status)
+        if min_capacity is not None:
+            _ensure_positive_int(min_capacity, "最小容量")
+        if room_type is not None:
+            room_type = _ensure_non_empty(room_type, "房型")
+        return RoomRepository(self.conn).search(status=status, min_capacity=min_capacity, room_type=room_type)
 
     def get_room_by_number(self, number: str) -> Room:
         number = _ensure_non_empty(number, "房间号")

@@ -113,6 +113,50 @@ class RoomRepository:
             for r in rows
         ]
 
+    def search(
+        self,
+        *,
+        status: str | None = None,
+        min_capacity: int | None = None,
+        room_type: str | None = None,
+    ) -> list[Room]:
+        conditions: list[str] = []
+        params: list[object] = []
+
+        if status is not None:
+            conditions.append("status = ?")
+            params.append(status)
+
+        if min_capacity is not None:
+            conditions.append("capacity >= ?")
+            params.append(min_capacity)
+
+        if room_type is not None:
+            conditions.append("lower(room_type) = lower(?)")
+            params.append(room_type)
+
+        where_clause = "" if not conditions else "WHERE " + " AND ".join(conditions)
+        rows = self._conn.execute(
+            f"""
+            SELECT id, number, room_type, capacity, price_per_night_cents, status
+            FROM rooms
+            {where_clause}
+            ORDER BY number
+            """,
+            params,
+        ).fetchall()
+        return [
+            Room(
+                id=int(r["id"]),
+                number=str(r["number"]),
+                room_type=str(r["room_type"]),
+                capacity=int(r["capacity"]),
+                price_per_night_cents=int(r["price_per_night_cents"]),
+                status=str(r["status"]),  # type: ignore[assignment]
+            )
+            for r in rows
+        ]
+
     def list_available(
         self,
         *,

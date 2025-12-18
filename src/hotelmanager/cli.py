@@ -89,7 +89,7 @@ def cmd_room_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
-        rooms = svc.list_rooms_filtered(status=args.status)
+        rooms = svc.list_rooms_filtered(status=args.status, min_capacity=args.min_capacity, room_type=args.type)
         rows: list[list[str]] = []
         for r in rooms:
             rows.append(
@@ -551,6 +551,8 @@ def build_parser() -> argparse.ArgumentParser:
         choices=["active", "maintenance"],
         help="按状态过滤（可选）",
     )
+    p_room_list.add_argument("--min-capacity", type=int, default=None, help="按最小容量过滤（可选）")
+    p_room_list.add_argument("--type", default=None, help="按房型过滤（可选，大小写不敏感）")
     p_room_list.set_defaults(func=cmd_room_list)
 
     p_room_status = room_sub.add_parser("status", parents=[sub_common], help="设置房间状态")
