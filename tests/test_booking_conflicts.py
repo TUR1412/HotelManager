@@ -97,3 +97,20 @@ class BookingConflictTests(unittest.TestCase):
                 end_date=date(2025, 12, 22),
             )
 
+    def test_stats_counts(self) -> None:
+        stats = self.svc.get_stats()
+        self.assertEqual(stats.room_count, 1)
+        self.assertEqual(stats.guest_count, 1)
+        self.assertEqual(stats.booking_count, 0)
+        self.assertEqual(stats.reserved_booking_count, 0)
+
+        self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        stats2 = self.svc.get_stats()
+        self.assertEqual(stats2.booking_count, 1)
+        self.assertEqual(stats2.reserved_booking_count, 1)
+

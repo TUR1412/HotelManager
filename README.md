@@ -32,6 +32,12 @@
 python -m hotelmanager init --db hotelmanager.db
 ```
 
+健康检查（查看数据量与数据库状态）：
+
+```bash
+python -m hotelmanager doctor --db hotelmanager.db
+```
+
 查看版本：
 
 ```bash

@@ -48,3 +48,11 @@ class BookingView:
     status: BookingStatus
     created_at: datetime
 
+
+@dataclass(frozen=True, slots=True)
+class HotelStats:
+    room_count: int
+    guest_count: int
+    booking_count: int
+    reserved_booking_count: int
+

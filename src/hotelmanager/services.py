@@ -8,7 +8,7 @@ from typing import Iterable
 import sqlite3
 
 from . import db as db_module
-from .domain import Booking, BookingView, Guest, Room
+from .domain import Booking, BookingView, Guest, HotelStats, Room
 from .errors import BookingConflictError, DatabaseError, NotFoundError, ValidationError
 from .repositories import BookingRepository, GuestRepository, RoomRepository
 
@@ -69,6 +69,20 @@ class HotelManagerService:
 
     def init_db(self) -> None:
         db_module.init_db(self.conn)
+
+    def get_stats(self) -> HotelStats:
+        room_count = int(self.conn.execute("SELECT COUNT(*) FROM rooms").fetchone()[0])
+        guest_count = int(self.conn.execute("SELECT COUNT(*) FROM guests").fetchone()[0])
+        booking_count = int(self.conn.execute("SELECT COUNT(*) FROM bookings").fetchone()[0])
+        reserved_booking_count = int(
+            self.conn.execute("SELECT COUNT(*) FROM bookings WHERE status = 'reserved'").fetchone()[0]
+        )
+        return HotelStats(
+            room_count=room_count,
+            guest_count=guest_count,
+            booking_count=booking_count,
+            reserved_booking_count=reserved_booking_count,
+        )
 
     # Rooms
     def add_room(

@@ -9,12 +9,20 @@ from .errors import HotelManagerError, ValidationError
 from .services import HotelManagerService, format_cents, parse_date, parse_money_to_cents
 
 
-def _add_global_db_arg(parser: argparse.ArgumentParser) -> None:
+def _build_common_parser(*, set_defaults: bool) -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(add_help=False)
     parser.add_argument(
         "--db",
-        default="hotelmanager.db",
+        default="hotelmanager.db" if set_defaults else argparse.SUPPRESS,
         help="SQLite 数据库路径（默认：hotelmanager.db）",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        default=False if set_defaults else argparse.SUPPRESS,
+        help="输出详细异常堆栈（用于排错）",
+    )
+    return parser
 
 
 def _print_table(headers: list[str], rows: list[list[str]]) -> None:
@@ -81,6 +89,25 @@ def cmd_room_list(args: argparse.Namespace) -> int:
                 ]
             )
         _print_table(["ID", "房间号", "房型", "容量", "每晚价格", "状态"], rows)
+        return 0
+    finally:
+        svc.close()
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        stats = svc.get_stats()
+        _print_table(
+            ["项目", "数量"],
+            [
+                ["房间数", str(stats.room_count)],
+                ["住客数", str(stats.guest_count)],
+                ["预订数", str(stats.booking_count)],
+                ["有效预订", str(stats.reserved_booking_count)],
+            ],
+        )
         return 0
     finally:
         svc.close()
@@ -188,15 +215,13 @@ def cmd_booking_cancel(args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
+    main_common = _build_common_parser(set_defaults=True)
+    sub_common = _build_common_parser(set_defaults=False)
+
     parser = argparse.ArgumentParser(
         prog="hotelmanager",
         description="HotelManager - 轻量酒店管理 CLI（房间/住客/预订 + SQLite）",
-    )
-    _add_global_db_arg(parser)
-    parser.add_argument(
-        "--verbose",
-        action="store_true",
-        help="输出详细异常堆栈（用于排错）",
+        parents=[main_common],
     )
     parser.add_argument(
         "--version",
@@ -207,14 +232,17 @@ def build_parser() -> argparse.ArgumentParser:
 
     sub = parser.add_subparsers(dest="command", required=True)
 
-    p_init = sub.add_parser("init", help="初始化数据库")
+    p_init = sub.add_parser("init", parents=[sub_common], help="初始化数据库")
     p_init.set_defaults(func=cmd_init)
+
+    p_doctor = sub.add_parser("doctor", parents=[sub_common], help="数据库健康检查")
+    p_doctor.set_defaults(func=cmd_doctor)
 
     # room
     p_room = sub.add_parser("room", help="房间管理")
     room_sub = p_room.add_subparsers(dest="room_cmd", required=True)
 
-    p_room_add = room_sub.add_parser("add", help="新增房间")
+    p_room_add = room_sub.add_parser("add", parents=[sub_common], help="新增房间")
     p_room_add.add_argument("--number", required=True, help="房间号（如 101）")
     p_room_add.add_argument("--type", required=True, help="房型（如 single/double/suite）")
     p_room_add.add_argument("--capacity", type=int, required=True, help="可住人数（正整数）")
@@ -227,10 +255,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     p_room_add.set_defaults(func=cmd_room_add)
 
-    p_room_list = room_sub.add_parser("list", help="查看房间列表")
+    p_room_list = room_sub.add_parser("list", parents=[sub_common], help="查看房间列表")
     p_room_list.set_defaults(func=cmd_room_list)
 
-    p_room_status = room_sub.add_parser("status", help="设置房间状态")
+    p_room_status = room_sub.add_parser("status", parents=[sub_common], help="设置房间状态")
     p_room_status.add_argument("--number", required=True, help="房间号（如 101）")
     p_room_status.add_argument(
         "--status",
@@ -244,30 +272,30 @@ def build_parser() -> argparse.ArgumentParser:
     p_guest = sub.add_parser("guest", help="住客管理")
     guest_sub = p_guest.add_subparsers(dest="guest_cmd", required=True)
 
-    p_guest_add = guest_sub.add_parser("add", help="新增住客")
+    p_guest_add = guest_sub.add_parser("add", parents=[sub_common], help="新增住客")
     p_guest_add.add_argument("--name", required=True, help="姓名")
     p_guest_add.add_argument("--email", required=True, help="邮箱（唯一）")
     p_guest_add.add_argument("--phone", default=None, help="电话（可选）")
     p_guest_add.set_defaults(func=cmd_guest_add)
 
-    p_guest_list = guest_sub.add_parser("list", help="查看住客列表")
+    p_guest_list = guest_sub.add_parser("list", parents=[sub_common], help="查看住客列表")
     p_guest_list.set_defaults(func=cmd_guest_list)
 
     # booking
     p_booking = sub.add_parser("booking", help="预订管理")
     booking_sub = p_booking.add_subparsers(dest="booking_cmd", required=True)
 
-    p_booking_create = booking_sub.add_parser("create", help="创建预订")
+    p_booking_create = booking_sub.add_parser("create", parents=[sub_common], help="创建预订")
     p_booking_create.add_argument("--room", required=True, help="房间号（如 101）")
     p_booking_create.add_argument("--guest-email", required=True, help="住客邮箱（需已存在）")
     p_booking_create.add_argument("--start", required=True, help="入住日期 YYYY-MM-DD")
     p_booking_create.add_argument("--end", required=True, help="退房日期 YYYY-MM-DD（必须 > start）")
     p_booking_create.set_defaults(func=cmd_booking_create)
 
-    p_booking_list = booking_sub.add_parser("list", help="查看预订列表")
+    p_booking_list = booking_sub.add_parser("list", parents=[sub_common], help="查看预订列表")
     p_booking_list.set_defaults(func=cmd_booking_list)
 
-    p_booking_cancel = booking_sub.add_parser("cancel", help="取消预订")
+    p_booking_cancel = booking_sub.add_parser("cancel", parents=[sub_common], help="取消预订")
     p_booking_cancel.add_argument("--id", type=int, required=True, help="预订 ID")
     p_booking_cancel.set_defaults(func=cmd_booking_cancel)
 
