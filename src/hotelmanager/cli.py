@@ -139,6 +139,30 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_stats_revenue(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        start = parse_date(args.start)
+        end = parse_date(args.end)
+        report = svc.get_revenue_report(start_date=start, end_date=end)
+
+        avg = 0 if report.room_nights == 0 else report.revenue_cents // report.room_nights
+        _print_table(
+            ["项目", "值"],
+            [
+                ["区间", f"{start.isoformat()}~{end.isoformat()}（闭开 [start, end)）"],
+                ["预订数", str(report.booking_count)],
+                ["房晚数", str(report.room_nights)],
+                ["收入", format_cents(report.revenue_cents)],
+                ["平均每晚", format_cents(avg)],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_room_status(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -493,6 +517,15 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_doctor = sub.add_parser("doctor", parents=[sub_common], help="数据库健康检查")
     p_doctor.set_defaults(func=cmd_doctor)
+
+    # stats
+    p_stats = sub.add_parser("stats", help="统计报表")
+    stats_sub = p_stats.add_subparsers(dest="stats_cmd", required=True)
+
+    p_stats_revenue = stats_sub.add_parser("revenue", parents=[sub_common], help="统计收入（按预订房价快照）")
+    p_stats_revenue.add_argument("--start", required=True, help="起始日期 YYYY-MM-DD（含）")
+    p_stats_revenue.add_argument("--end", required=True, help="结束日期 YYYY-MM-DD（不含）")
+    p_stats_revenue.set_defaults(func=cmd_stats_revenue)
 
     # room
     p_room = sub.add_parser("room", help="房间管理")

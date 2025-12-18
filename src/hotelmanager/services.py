@@ -23,6 +23,13 @@ class DbInfo:
     busy_timeout_ms: int
 
 
+@dataclass(frozen=True, slots=True)
+class RevenueReport:
+    booking_count: int
+    room_nights: int
+    revenue_cents: int
+
+
 def now_utc() -> datetime:
     # 统一存储：UTC 但以 naive datetime 写入（避免“naive/aware 混用”导致比较时报错）。
     return datetime.now(tz=timezone.utc).replace(microsecond=0, tzinfo=None)
@@ -157,6 +164,18 @@ class HotelManagerService:
             journal_mode=journal_mode,
             foreign_keys=foreign_keys,
             busy_timeout_ms=busy_timeout_ms,
+        )
+
+    def get_revenue_report(self, *, start_date: date, end_date: date) -> RevenueReport:
+        if end_date <= start_date:
+            raise ValidationError("日期区间不合法：end 必须晚于 start（闭开区间 [start, end)）")
+        booking_count, room_nights, revenue_cents = BookingRepository(self.conn).get_revenue_for_range(
+            start=start_date, end=end_date
+        )
+        return RevenueReport(
+            booking_count=booking_count,
+            room_nights=room_nights,
+            revenue_cents=revenue_cents,
         )
 
     # Rooms

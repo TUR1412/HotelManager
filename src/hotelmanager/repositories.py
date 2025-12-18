@@ -384,6 +384,56 @@ class BookingRepository:
         self._conn.commit()
         return self.get_by_id(booking_id)
 
+    def get_revenue_for_range(self, *, start: date, end: date) -> tuple[int, int, int]:
+        """
+        统计收入（按预订价格快照），仅统计 reserved。
+
+        口径：
+        - 仅计算与区间 [start, end) 有重叠的预订
+        - 只计入“重叠部分”的房晚与收入
+        """
+        row = self._conn.execute(
+            """
+            SELECT
+                COUNT(*) AS booking_count,
+                COALESCE(
+                    CAST(
+                        ROUND(
+                            SUM(
+                                (julianday(MIN(b.end_date, ?)) - julianday(MAX(b.start_date, ?)))
+                            ),
+                            0
+                        ) AS INTEGER
+                    ),
+                    0
+                ) AS room_nights,
+                COALESCE(
+                    CAST(
+                        ROUND(
+                            SUM(
+                                b.price_per_night_cents
+                                * (julianday(MIN(b.end_date, ?)) - julianday(MAX(b.start_date, ?)))
+                            ),
+                            0
+                        ) AS INTEGER
+                    ),
+                    0
+                ) AS revenue_cents
+            FROM bookings b
+            WHERE b.status = 'reserved'
+              AND NOT (b.end_date <= ? OR b.start_date >= ?)
+            """,
+            (
+                end.isoformat(),
+                start.isoformat(),
+                end.isoformat(),
+                start.isoformat(),
+                start.isoformat(),
+                end.isoformat(),
+            ),
+        ).fetchone()
+        return int(row["booking_count"]), int(row["room_nights"]), int(row["revenue_cents"])
+
     def get_view_by_id(self, booking_id: int) -> BookingView | None:
         row = self._conn.execute(
             """
