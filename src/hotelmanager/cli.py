@@ -174,7 +174,7 @@ def cmd_guest_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
-        guests = svc.list_guests()
+        guests = svc.list_guests_filtered(args.q)
         rows: list[list[str]] = []
         for g in guests:
             rows.append(
@@ -369,6 +369,7 @@ def build_parser() -> argparse.ArgumentParser:
     p_guest_add.set_defaults(func=cmd_guest_add)
 
     p_guest_list = guest_sub.add_parser("list", parents=[sub_common], help="查看住客列表")
+    p_guest_list.add_argument("--q", default=None, help="按姓名/邮箱模糊搜索（可选）")
     p_guest_list.set_defaults(func=cmd_guest_list)
 
     p_guest_show = guest_sub.add_parser("show", parents=[sub_common], help="查看住客详情")

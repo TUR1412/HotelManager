@@ -184,6 +184,14 @@ class HotelManagerService:
     def list_guests(self) -> list[Guest]:
         return GuestRepository(self.conn).list_all()
 
+    def list_guests_filtered(self, query: str | None) -> list[Guest]:
+        if query is None:
+            return self.list_guests()
+        cleaned = query.strip()
+        if not cleaned:
+            return self.list_guests()
+        return GuestRepository(self.conn).search(cleaned)
+
     def get_guest_by_email(self, email: str) -> Guest:
         email = _ensure_email(email, "邮箱")
         guest = GuestRepository(self.conn).get_by_email(email)

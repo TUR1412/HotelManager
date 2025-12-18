@@ -175,6 +175,29 @@ class GuestRepository:
             for r in rows
         ]
 
+    def search(self, query: str) -> list[Guest]:
+        like = f"%{query}%"
+        rows = self._conn.execute(
+            """
+            SELECT id, full_name, email, phone, created_at
+            FROM guests
+            WHERE lower(full_name) LIKE lower(?)
+               OR lower(email) LIKE lower(?)
+            ORDER BY created_at DESC
+            """,
+            (like, like),
+        ).fetchall()
+        return [
+            Guest(
+                id=int(r["id"]),
+                full_name=str(r["full_name"]),
+                email=str(r["email"]),
+                phone=None if r["phone"] is None else str(r["phone"]),
+                created_at=_parse_iso_datetime(str(r["created_at"])),
+            )
+            for r in rows
+        ]
+
 
 class BookingRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:

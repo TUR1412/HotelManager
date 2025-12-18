@@ -108,6 +108,12 @@ class BookingConflictTests(unittest.TestCase):
         g = self.svc.get_guest_by_email("ALICE@EXAMPLE.COM")
         self.assertEqual(g.email, "alice@example.com")
 
+    def test_guest_list_search(self) -> None:
+        self.svc.add_guest(full_name="Bob Builder", email="bob@example.com", phone=None)
+        self.assertEqual(len(self.svc.list_guests_filtered("alice")), 1)
+        self.assertEqual(len(self.svc.list_guests_filtered("BOB")), 1)
+        self.assertEqual(len(self.svc.list_guests_filtered("example.com")), 2)
+
     def test_get_room_by_number(self) -> None:
         r = self.svc.get_room_by_number("101")
         self.assertEqual(r.number, "101")
