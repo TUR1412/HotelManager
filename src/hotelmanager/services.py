@@ -250,29 +250,31 @@ class HotelManagerService:
         guest_repo = GuestRepository(self.conn)
         booking_repo = BookingRepository(self.conn)
 
-        room = room_repo.get_by_number(room_number)
-        if room is None:
-            raise NotFoundError(f"房间不存在：{room_number}")
-        if room.status != "active":
-            raise ValidationError(f"房间不可用（状态={room.status}）：{room_number}")
+        # 并发安全：使用 IMMEDIATE 事务保证“冲突检测 + 写入”原子性，避免多进程/多线程下的竞态双订。
+        with db_module.transaction(self.conn, mode="IMMEDIATE"):
+            room = room_repo.get_by_number(room_number)
+            if room is None:
+                raise NotFoundError(f"房间不存在：{room_number}")
+            if room.status != "active":
+                raise ValidationError(f"房间不可用（状态={room.status}）：{room_number}")
 
-        guest = guest_repo.get_by_email(guest_email)
-        if guest is None:
-            raise NotFoundError(f"住客不存在（请先新增 guest）：{guest_email}")
+            guest = guest_repo.get_by_email(guest_email)
+            if guest is None:
+                raise NotFoundError(f"住客不存在（请先新增 guest）：{guest_email}")
 
-        if booking_repo.has_conflict(room_id=room.id, start=start_date, end=end_date):
-            raise BookingConflictError(
-                f"预订冲突：房间 {room_number} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+            if booking_repo.has_conflict(room_id=room.id, start=start_date, end=end_date):
+                raise BookingConflictError(
+                    f"预订冲突：房间 {room_number} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+                )
+
+            return booking_repo.create(
+                room_id=room.id,
+                guest_id=guest.id,
+                price_per_night_cents=room.price_per_night_cents,
+                start=start_date,
+                end=end_date,
+                created_at=now_utc(),
             )
-
-        return booking_repo.create(
-            room_id=room.id,
-            guest_id=guest.id,
-            price_per_night_cents=room.price_per_night_cents,
-            start=start_date,
-            end=end_date,
-            created_at=now_utc(),
-        )
 
     def list_available_rooms(
         self,
