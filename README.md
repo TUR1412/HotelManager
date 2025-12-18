@@ -63,6 +63,8 @@
 - [ ] 数据导出（CSV/JSON）与备份
 - [ ] REST API / Web UI（在保持核心领域层不变的前提下扩展交互层）
 
+更详细路线图见：`docs/ROADMAP.md`。
+
 ## 快速开始
 
 > 默认数据库文件：当前目录下 `hotelmanager.db`。你也可以通过 `--db` 指定路径。
