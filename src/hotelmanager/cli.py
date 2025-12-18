@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import io
 import json
 import sqlite3
 import sys
@@ -36,6 +38,19 @@ def _build_common_parser(*, set_defaults: bool) -> argparse.ArgumentParser:
 
 def _print_json(data: object) -> None:
     print(json.dumps(data, ensure_ascii=False, indent=2))
+
+
+def _csv_to_string(headers: list[str], rows: list[list[str]]) -> str:
+    buf = io.StringIO(newline="")
+    writer = csv.writer(buf)
+    writer.writerow(headers)
+    writer.writerows(rows)
+    return buf.getvalue()
+
+
+def _write_text(path: str, content: str) -> None:
+    with open(path, "w", encoding="utf-8", newline="") as f:
+        f.write(content)
 
 
 def _print_table(headers: list[str], rows: list[list[str]]) -> None:
@@ -620,6 +635,108 @@ def cmd_booking_quote(args: argparse.Namespace) -> int:
     finally:
         svc.close()
 
+
+def cmd_export_rooms(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        rooms = svc.list_rooms()
+        rows = [
+            [
+                str(r.id),
+                r.number,
+                r.room_type,
+                str(r.capacity),
+                str(r.price_per_night_cents),
+                r.status,
+            ]
+            for r in rooms
+        ]
+        content = _csv_to_string(["id", "number", "room_type", "capacity", "price_per_night_cents", "status"], rows)
+        if args.out:
+            _write_text(args.out, content)
+        else:
+            print(content, end="")
+        return 0
+    finally:
+        svc.close()
+
+
+def cmd_export_guests(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        guests = svc.list_guests()
+        rows = [
+            [
+                str(g.id),
+                g.full_name,
+                g.email,
+                g.phone or "",
+                g.created_at.isoformat(timespec="seconds"),
+            ]
+            for g in guests
+        ]
+        content = _csv_to_string(["id", "full_name", "email", "phone", "created_at"], rows)
+        if args.out:
+            _write_text(args.out, content)
+        else:
+            print(content, end="")
+        return 0
+    finally:
+        svc.close()
+
+
+def cmd_export_bookings(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        views = svc.list_booking_views()
+        rows: list[list[str]] = []
+        for b in views:
+            nights = (b.end_date - b.start_date).days
+            total = b.price_per_night_cents * nights
+            rows.append(
+                [
+                    str(b.id),
+                    b.room_number,
+                    b.room_type,
+                    b.guest_name,
+                    b.guest_email,
+                    b.start_date.isoformat(),
+                    b.end_date.isoformat(),
+                    str(nights),
+                    str(b.price_per_night_cents),
+                    str(total),
+                    b.status,
+                    b.created_at.isoformat(timespec="seconds"),
+                ]
+            )
+        content = _csv_to_string(
+            [
+                "id",
+                "room_number",
+                "room_type",
+                "guest_name",
+                "guest_email",
+                "start_date",
+                "end_date",
+                "nights",
+                "price_per_night_cents",
+                "total_cents",
+                "status",
+                "created_at",
+            ],
+            rows,
+        )
+        if args.out:
+            _write_text(args.out, content)
+        else:
+            print(content, end="")
+        return 0
+    finally:
+        svc.close()
+
 def build_parser() -> argparse.ArgumentParser:
     main_common = _build_common_parser(set_defaults=True)
     sub_common = _build_common_parser(set_defaults=False)
@@ -652,6 +769,22 @@ def build_parser() -> argparse.ArgumentParser:
     p_stats_revenue.add_argument("--start", required=True, help="起始日期 YYYY-MM-DD（含）")
     p_stats_revenue.add_argument("--end", required=True, help="结束日期 YYYY-MM-DD（不含）")
     p_stats_revenue.set_defaults(func=cmd_stats_revenue)
+
+    # export
+    p_export = sub.add_parser("export", help="导出 CSV（默认输出到 stdout）")
+    export_sub = p_export.add_subparsers(dest="export_cmd", required=True)
+
+    p_export_rooms = export_sub.add_parser("rooms", parents=[sub_common], help="导出房间 CSV")
+    p_export_rooms.add_argument("--out", default=None, help="输出文件路径（可选；不填则输出到 stdout）")
+    p_export_rooms.set_defaults(func=cmd_export_rooms)
+
+    p_export_guests = export_sub.add_parser("guests", parents=[sub_common], help="导出住客 CSV")
+    p_export_guests.add_argument("--out", default=None, help="输出文件路径（可选；不填则输出到 stdout）")
+    p_export_guests.set_defaults(func=cmd_export_guests)
+
+    p_export_bookings = export_sub.add_parser("bookings", parents=[sub_common], help="导出预订 CSV（含金额快照）")
+    p_export_bookings.add_argument("--out", default=None, help="输出文件路径（可选；不填则输出到 stdout）")
+    p_export_bookings.set_defaults(func=cmd_export_bookings)
 
     # room
     p_room = sub.add_parser("room", help="房间管理")
