@@ -26,6 +26,23 @@
 
 > 默认数据库文件：当前目录下 `hotelmanager.db`。你也可以通过 `--db` 指定路径。
 
+### 安装（可选）
+
+你可以直接用 `python -m hotelmanager ...` 运行；如果希望使用 `hotelmanager` 命令行入口，推荐可编辑安装：
+
+```bash
+python -m pip install -e .
+```
+
+安装后示例：
+
+```bash
+hotelmanager --version
+hotelmanager doctor --db hotelmanager.db
+```
+
+### 常用命令
+
 初始化数据库：
 
 ```bash
