@@ -1,19 +1,31 @@
 # HotelManager
 
+![CI](https://github.com/TUR1412/HotelManager/actions/workflows/ci.yml/badge.svg)
+
 一个轻量、可扩展的“酒店管理”示例项目：以 **SQLite** 作为本地数据存储，提供 **命令行 CLI** 用于管理房间、住客与预订（Booking）。
 
 > 目标定位：仓库初始化 & 专业级骨架（可运行、可测试、可 CI）。
+
+## 核心亮点
+
+- **零运行时依赖**：仅 Python 标准库（`sqlite3` + `argparse`）
+- **分层清晰**：CLI / 服务层 / 仓储层 / Schema 分离，便于扩展
+- **业务规则可验证**：预订冲突检测（日期区间采用闭开区间 `[start, end)`）
+- **更真实的金额模型**：预订写入“房价快照”，后续改价不会影响历史预订展示
+- **实用扩展**：支持“按日期查询可用房间”、`booking quote` 预估价格
 
 ## 功能范围（当前版本）
 
 - 房间（Room）
   - 新增房间、查看房间列表
+  - 查询可用房间（按日期区间）
 - 住客（Guest）
   - 新增住客、查看住客列表
 - 预订（Booking）
   - 创建预订（自动检测日期冲突）
   - 查看预订列表
   - 取消预订
+  - 价格预估（不创建预订）
 
 ## 技术栈
 
@@ -21,6 +33,16 @@
 - SQLite（`sqlite3`）
 - CLI：`argparse`
 - CI：GitHub Actions（`unittest` + `compileall`）
+
+## 路线图（Roadmap）
+
+> 这是一个可扩展骨架，欢迎把它发展成完整的 Hotel PMS/OMS。
+
+- [ ] 入住 / 退房（Check-in / Check-out）状态流转
+- [ ] 账单与发票（按房晚 / 折扣 / 税费）
+- [ ] 房态看板（按日期/楼层/状态）
+- [ ] 数据导出（CSV/JSON）与备份
+- [ ] REST API / Web UI（在保持核心领域层不变的前提下扩展交互层）
 
 ## 快速开始
 
@@ -89,6 +111,18 @@ python -m hotelmanager guest add --name "Alice" --email "alice@example.com" --ph
 
 ```bash
 python -m hotelmanager booking create --room 101 --guest-email "alice@example.com" --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
+```
+
+查询可用房间：
+
+```bash
+python -m hotelmanager room available --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
+```
+
+预估价格（不创建预订）：
+
+```bash
+python -m hotelmanager booking quote --room 101 --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
 ```
 
 查看列表：
@@ -177,3 +211,8 @@ PYTHONPATH=src python -m compileall -q src tests
 设计取舍与分层结构说明见：`docs/ARCHITECTURE.md`。
 
 CLI 参数与用法说明见：`docs/CLI.md`。
+
+## 贡献
+
+- 开发约定见：`CONTRIBUTING.md`
+- 变更记录见：`CHANGELOG.md`

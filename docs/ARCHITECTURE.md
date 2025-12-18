@@ -28,6 +28,10 @@
 - `price_per_night_cents`：以“分”为单位的整数金额，避免浮点误差
 - `status`：`active | maintenance`
 
+扩展能力：
+
+- “可用房间查询”通过 `NOT EXISTS + 区间重叠判断` 排除冲突预订（见 `RoomRepository.list_available`）
+
 ### Guests
 
 - `email`：住客邮箱（逻辑上按不区分大小写处理；应用层会归一化为小写）
@@ -37,6 +41,8 @@
 - `start_date` 与 `end_date`：日期区间采用 **闭开区间** `[start, end)`（start 含、end 不含）
   - 这样可以自然表达“连续入住”（例如 12/20-12/22 与 12/22-12/23 不冲突）
 - `status`：`reserved | cancelled`
+- `price_per_night_cents`：**预订价格快照**
+  - 创建预订时把“当时的房价”写入 bookings，避免后续 `room price` 调整导致历史预订金额变化。
 
 ## 3. 预订冲突检测
 
@@ -63,3 +69,15 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 PYTHONPATH=src python -m compileall -q src tests
 ```
 
+## 6. 数据库迁移（Schema Migration）
+
+为避免“用户已有数据库文件无法升级”的问题，`init_db` 会：
+
+- 先执行 `CREATE TABLE IF NOT EXISTS ...` 保障结构存在
+- 再做“幂等迁移”（根据 `PRAGMA table_info` 判断缺失字段并补齐）
+- 最后写入 `PRAGMA user_version` 用于版本追踪
+
+目前已包含：
+
+- `bookings.price_per_night_cents` 字段补齐与回填
+- `guests.email` 的不区分大小写唯一索引（`lower(email)`）

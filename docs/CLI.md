@@ -64,6 +64,13 @@ python -m hotelmanager room status --number 101 --status maintenance --db hotelm
 python -m hotelmanager room price --number 101 --price 499.00 --db hotelmanager.db
 ```
 
+查询可用房间（按日期区间 `[start, end)`，支持容量/房型过滤）：
+
+```bash
+python -m hotelmanager room available --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
+python -m hotelmanager room available --start 2025-12-20 --end 2025-12-22 --min-capacity 2 --type double --db hotelmanager.db
+```
+
 ## 3. 住客（guest）
 
 新增住客：
@@ -113,3 +120,8 @@ python -m hotelmanager booking show --id 1 --db hotelmanager.db
 python -m hotelmanager booking cancel --id 1 --db hotelmanager.db
 ```
 
+预估价格（不创建预订）：
+
+```bash
+python -m hotelmanager booking quote --room 101 --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
+```

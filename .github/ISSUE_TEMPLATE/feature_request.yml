@@ -1,0 +1,41 @@
+name: 功能需求
+description: 提出一个你希望项目支持的能力
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        需求写得越清楚，实现就越快越准。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 你想解决什么问题？
+      placeholder: 例如：希望支持入住/退房状态流转，便于做房态看板...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 你希望的解决方案
+      description: 可以给出 CLI 示例或简单的业务规则
+      placeholder: |
+        新增命令：
+        - hotelmanager checkin --booking-id 1
+        - hotelmanager checkout --booking-id 1
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 验收标准（可选）
+      placeholder: |
+        - [ ] 支持命令 A
+        - [ ] 数据库字段变更可迁移
+        - [ ] 增加单元测试覆盖
+    validations:
+      required: false
+
