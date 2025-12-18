@@ -85,6 +85,31 @@ class RoomRepository:
             for r in rows
         ]
 
+    def list_filtered(self, *, status: str | None) -> list[Room]:
+        if status is None:
+            return self.list_all()
+
+        rows = self._conn.execute(
+            """
+            SELECT id, number, room_type, capacity, price_per_night_cents, status
+            FROM rooms
+            WHERE status = ?
+            ORDER BY number
+            """,
+            (status,),
+        ).fetchall()
+        return [
+            Room(
+                id=int(r["id"]),
+                number=str(r["number"]),
+                room_type=str(r["room_type"]),
+                capacity=int(r["capacity"]),
+                price_per_night_cents=int(r["price_per_night_cents"]),
+                status=str(r["status"]),  # type: ignore[assignment]
+            )
+            for r in rows
+        ]
+
     def set_status_by_number(self, number: str, status: str) -> Room:
         self._conn.execute(
             "UPDATE rooms SET status = ? WHERE number = ?",

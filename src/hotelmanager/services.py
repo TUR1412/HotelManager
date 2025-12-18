@@ -128,6 +128,11 @@ class HotelManagerService:
     def list_rooms(self) -> list[Room]:
         return RoomRepository(self.conn).list_all()
 
+    def list_rooms_filtered(self, *, status: str | None) -> list[Room]:
+        if status is not None and status not in ("active", "maintenance"):
+            raise ValidationError(f"未知房间状态：{status}")
+        return RoomRepository(self.conn).list_filtered(status=status)
+
     def get_room_by_number(self, number: str) -> Room:
         number = _ensure_non_empty(number, "房间号")
         room = RoomRepository(self.conn).get_by_number(number)

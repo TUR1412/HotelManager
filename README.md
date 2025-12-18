@@ -99,6 +99,12 @@ python -m hotelmanager guest list --db hotelmanager.db
 python -m hotelmanager booking list --db hotelmanager.db
 ```
 
+按状态筛选房间：
+
+```bash
+python -m hotelmanager room list --status active --db hotelmanager.db
+```
+
 按条件筛选住客（姓名/邮箱模糊搜索）：
 
 ```bash

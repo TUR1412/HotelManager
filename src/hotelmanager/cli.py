@@ -75,7 +75,7 @@ def cmd_room_list(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
         svc.init_db()
-        rooms = svc.list_rooms()
+        rooms = svc.list_rooms_filtered(status=args.status)
         rows: list[list[str]] = []
         for r in rooms:
             rows.append(
@@ -337,6 +337,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_room_add.set_defaults(func=cmd_room_add)
 
     p_room_list = room_sub.add_parser("list", parents=[sub_common], help="查看房间列表")
+    p_room_list.add_argument(
+        "--status",
+        default=None,
+        choices=["active", "maintenance"],
+        help="按状态过滤（可选）",
+    )
     p_room_list.set_defaults(func=cmd_room_list)
 
     p_room_status = room_sub.add_parser("status", parents=[sub_common], help="设置房间状态")
