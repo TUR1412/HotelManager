@@ -13,6 +13,12 @@
 python -m pip install -e .
 ```
 
+如果你希望启用更严格的静态检查（可选 dev 依赖）：
+
+```bash
+python -m pip install -e .[dev]
+```
+
 ## 2. 运行测试
 
 本项目使用 `unittest` 与 `compileall` 作为最小化的质量门槛：
@@ -23,6 +29,18 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 ```
 
 > 说明：`PYTHONPATH=src` 让测试能直接引用 `src/` 下的包，不强制依赖安装步骤。
+
+也可以使用脚本（有限任务，不会启动服务）：
+
+```powershell
+pwsh -NoLogo -NoProfile -File .\scripts\check.ps1
+pwsh -NoLogo -NoProfile -File .\scripts\lint.ps1
+```
+
+```bash
+bash ./scripts/check.sh
+bash ./scripts/lint.sh
+```
 
 ## 3. 代码风格与原则
 
@@ -38,4 +56,3 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 - 一个提交只做一件事
 - 提交信息清晰（例如 `feat:` / `fix:` / `docs:` / `chore:` / `ci:`）
 - 每次提交都能在 CI 中独立通过
-

@@ -6,6 +6,19 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-12-18
+
+升级与扩展：
+
+- Booking：支持改期（`booking reschedule`）与延住（`booking extend`），并加入并发安全的事务保护（避免竞态双订）
+- Booking：预订列表支持按日期区间过滤（筛选与区间重叠的预订）
+- Stats：新增收入统计（`stats revenue`），按“价格快照 * 房晚”统计（仅统计 reserved）
+- Export：新增 CSV 导出（`export rooms/guests/bookings`）
+- CLI：新增 `--json` 输出（doctor/list/report 等支持脚本化）
+- DB：增强初始化校验（结构校验 + 更清晰的 WAL 失败提示 + 事务工具）
+- 工程化：CI 增加 Windows 运行矩阵；增加 `pip install .` 安装校验；新增 ruff 静态检查
+- 文档与示例：新增 DB/FAQ/ROADMAP 文档与 demo 脚本、仓库脚本（check/lint）
+
 ## [0.2.0] - 2025-12-18
 
 升级与扩展：

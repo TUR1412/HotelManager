@@ -9,6 +9,7 @@
 - `--db`：SQLite 数据库路径（默认：`hotelmanager.db`）
 - `--verbose`：输出详细异常堆栈（用于排错）
 - `--version`：输出版本号并退出
+- `--json`：以 JSON 输出（适合脚本化；部分命令支持）
 
 示例（两种写法等价）：
 
@@ -44,6 +45,13 @@ python -m hotelmanager room add --number 101 --type single --capacity 1 --price 
 ```bash
 python -m hotelmanager room list --db hotelmanager.db
 python -m hotelmanager room list --status active --db hotelmanager.db
+```
+
+按容量/房型过滤：
+
+```bash
+python -m hotelmanager room list --min-capacity 2 --db hotelmanager.db
+python -m hotelmanager room list --type suite --db hotelmanager.db
 ```
 
 查看房间详情：
@@ -108,6 +116,12 @@ python -m hotelmanager booking list --room 101 --status reserved --db hotelmanag
 python -m hotelmanager booking list --guest-email "alice@example.com" --db hotelmanager.db
 ```
 
+按日期区间过滤（筛选与区间重叠的预订）：
+
+```bash
+python -m hotelmanager booking list --from 2025-12-21 --to 2025-12-23 --db hotelmanager.db
+```
+
 查看预订详情：
 
 ```bash
@@ -124,4 +138,34 @@ python -m hotelmanager booking cancel --id 1 --db hotelmanager.db
 
 ```bash
 python -m hotelmanager booking quote --room 101 --start 2025-12-20 --end 2025-12-22 --db hotelmanager.db
+```
+
+预订改期：
+
+```bash
+python -m hotelmanager booking reschedule --id 1 --start 2025-12-24 --end 2025-12-26 --db hotelmanager.db
+```
+
+预订延住（仅延后退房日期）：
+
+```bash
+python -m hotelmanager booking extend --id 1 --end 2025-12-27 --db hotelmanager.db
+```
+
+## 5. 统计（stats）
+
+收入统计（按预订房价快照 * 房晚，仅统计 reserved）：
+
+```bash
+python -m hotelmanager stats revenue --start 2025-12-20 --end 2025-12-30 --db hotelmanager.db
+```
+
+## 6. 导出（export）
+
+导出 CSV（默认输出到 stdout，可用 `--out` 写文件）：
+
+```bash
+python -m hotelmanager export rooms --db hotelmanager.db --out rooms.csv
+python -m hotelmanager export guests --db hotelmanager.db --out guests.csv
+python -m hotelmanager export bookings --db hotelmanager.db --out bookings.csv
 ```
