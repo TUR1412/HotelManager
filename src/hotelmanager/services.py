@@ -1,0 +1,187 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from datetime import date, datetime
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+from typing import Iterable
+
+import sqlite3
+
+from . import db as db_module
+from .domain import Booking, Guest, Room
+from .errors import BookingConflictError, DatabaseError, NotFoundError, ValidationError
+from .repositories import BookingRepository, GuestRepository, RoomRepository
+
+
+def parse_date(value: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as e:  # pragma: no cover
+        raise ValidationError(f"日期格式错误：{value}（期望 YYYY-MM-DD）") from e
+
+
+def parse_money_to_cents(value: str) -> int:
+    try:
+        d = Decimal(value)
+    except InvalidOperation as e:
+        raise ValidationError(f"价格格式错误：{value}（示例：399.00）") from e
+
+    if d < 0:
+        raise ValidationError("价格不能为负数")
+
+    d = d.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    cents = int(d * 100)
+    return cents
+
+
+def format_cents(cents: int) -> str:
+    d = Decimal(cents) / Decimal(100)
+    return f"{d:.2f}"
+
+
+def _ensure_non_empty(value: str, field_name: str) -> str:
+    cleaned = value.strip()
+    if not cleaned:
+        raise ValidationError(f"{field_name} 不能为空")
+    return cleaned
+
+
+def _ensure_positive_int(value: int, field_name: str) -> int:
+    if value <= 0:
+        raise ValidationError(f"{field_name} 必须为正整数")
+    return value
+
+
+@dataclass(slots=True)
+class HotelManagerService:
+    conn: sqlite3.Connection
+
+    @classmethod
+    def open(cls, db_path: str) -> "HotelManagerService":
+        try:
+            conn = db_module.connect(db_path)
+        except Exception as e:  # pragma: no cover
+            raise DatabaseError(f"无法打开数据库：{db_path}") from e
+        return cls(conn=conn)
+
+    def close(self) -> None:
+        self.conn.close()
+
+    def init_db(self) -> None:
+        db_module.init_db(self.conn)
+
+    # Rooms
+    def add_room(
+        self,
+        *,
+        number: str,
+        room_type: str,
+        capacity: int,
+        price_per_night_cents: int,
+        status: str = "active",
+    ) -> Room:
+        number = _ensure_non_empty(number, "房间号")
+        room_type = _ensure_non_empty(room_type, "房型")
+        _ensure_positive_int(capacity, "可住人数")
+
+        try:
+            repo = RoomRepository(self.conn)
+            return repo.create(
+                number=number,
+                room_type=room_type,
+                capacity=capacity,
+                price_per_night_cents=price_per_night_cents,
+                status=status,
+            )
+        except sqlite3.IntegrityError as e:
+            raise ValidationError(f"房间号已存在：{number}") from e
+
+    def list_rooms(self) -> list[Room]:
+        return RoomRepository(self.conn).list_all()
+
+    # Guests
+    def add_guest(
+        self,
+        *,
+        full_name: str,
+        email: str,
+        phone: str | None,
+    ) -> Guest:
+        full_name = _ensure_non_empty(full_name, "姓名")
+        email = _ensure_non_empty(email, "邮箱")
+        phone = None if phone is None else phone.strip() or None
+
+        try:
+            repo = GuestRepository(self.conn)
+            return repo.create(
+                full_name=full_name,
+                email=email,
+                phone=phone,
+                created_at=datetime.now().astimezone().replace(tzinfo=None),
+            )
+        except sqlite3.IntegrityError as e:
+            raise ValidationError(f"邮箱已存在：{email}") from e
+
+    def list_guests(self) -> list[Guest]:
+        return GuestRepository(self.conn).list_all()
+
+    # Bookings
+    def create_booking(
+        self,
+        *,
+        room_number: str,
+        guest_email: str,
+        start_date: date,
+        end_date: date,
+    ) -> Booking:
+        room_number = _ensure_non_empty(room_number, "房间号")
+        guest_email = _ensure_non_empty(guest_email, "住客邮箱")
+
+        if end_date <= start_date:
+            raise ValidationError("退房日期必须晚于入住日期（end > start）")
+
+        room_repo = RoomRepository(self.conn)
+        guest_repo = GuestRepository(self.conn)
+        booking_repo = BookingRepository(self.conn)
+
+        room = room_repo.get_by_number(room_number)
+        if room is None:
+            raise NotFoundError(f"房间不存在：{room_number}")
+        if room.status != "active":
+            raise ValidationError(f"房间不可用（状态={room.status}）：{room_number}")
+
+        guest = guest_repo.get_by_email(guest_email)
+        if guest is None:
+            raise NotFoundError(f"住客不存在（请先新增 guest）：{guest_email}")
+
+        if booking_repo.has_conflict(room_id=room.id, start=start_date, end=end_date):
+            raise BookingConflictError(
+                f"预订冲突：房间 {room_number} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+            )
+
+        return booking_repo.create(
+            room_id=room.id,
+            guest_id=guest.id,
+            start=start_date,
+            end=end_date,
+            created_at=datetime.now().astimezone().replace(tzinfo=None),
+        )
+
+    def list_bookings(self) -> list[Booking]:
+        return BookingRepository(self.conn).list_all()
+
+    def cancel_booking(self, booking_id: int) -> Booking:
+        _ensure_positive_int(booking_id, "预订ID")
+        try:
+            return BookingRepository(self.conn).cancel(booking_id)
+        except LookupError as e:
+            raise NotFoundError(f"预订不存在：id={booking_id}") from e
+
+
+def close_quietly(services: Iterable[HotelManagerService]) -> None:
+    for service in services:
+        try:
+            service.close()
+        except Exception:
+            pass
+
