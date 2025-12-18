@@ -211,3 +211,39 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(view.id, booking.id)
         self.assertEqual(view.room_number, "101")
         self.assertEqual(view.guest_email, "alice@example.com")
+
+    def test_booking_price_is_snapshot(self) -> None:
+        booking = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        view_before = self.svc.get_booking_view(booking.id)
+        self.assertEqual(view_before.price_per_night_cents, 39900)
+
+        # 房价调整不应影响已创建预订的价格快照
+        self.svc.set_room_price(number="101", price_per_night_cents=49900)
+        view_after = self.svc.get_booking_view(booking.id)
+        self.assertEqual(view_after.price_per_night_cents, 39900)
+
+    def test_room_available_excludes_conflicts(self) -> None:
+        self.svc.add_room(
+            number="102",
+            room_type="double",
+            capacity=2,
+            price_per_night_cents=59900,
+            status="active",
+        )
+        self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+
+        available = self.svc.list_available_rooms(
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        self.assertEqual([r.number for r in available], ["102"])

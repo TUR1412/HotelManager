@@ -110,6 +110,61 @@ class RoomRepository:
             for r in rows
         ]
 
+    def list_available(
+        self,
+        *,
+        start: date,
+        end: date,
+        min_capacity: int | None = None,
+        room_type: str | None = None,
+    ) -> list[Room]:
+        conditions: list[str] = ["r.status = 'active'"]
+        params: list[object] = []
+
+        if min_capacity is not None:
+            conditions.append("r.capacity >= ?")
+            params.append(min_capacity)
+
+        if room_type is not None:
+            conditions.append("lower(r.room_type) = lower(?)")
+            params.append(room_type)
+
+        # 可用性：没有任何与 [start, end) 重叠的 reserved 预订
+        conditions.append(
+            """
+            NOT EXISTS (
+                SELECT 1
+                FROM bookings b
+                WHERE b.room_id = r.id
+                  AND b.status = 'reserved'
+                  AND NOT (b.end_date <= ? OR b.start_date >= ?)
+            )
+            """
+        )
+        params.extend([start.isoformat(), end.isoformat()])
+
+        where_clause = " AND ".join(c.strip() for c in conditions)
+        rows = self._conn.execute(
+            f"""
+            SELECT r.id, r.number, r.room_type, r.capacity, r.price_per_night_cents, r.status
+            FROM rooms r
+            WHERE {where_clause}
+            ORDER BY r.number
+            """,
+            params,
+        ).fetchall()
+        return [
+            Room(
+                id=int(r["id"]),
+                number=str(r["number"]),
+                room_type=str(r["room_type"]),
+                capacity=int(r["capacity"]),
+                price_per_night_cents=int(r["price_per_night_cents"]),
+                status=str(r["status"]),  # type: ignore[assignment]
+            )
+            for r in rows
+        ]
+
     def set_status_by_number(self, number: str, status: str) -> Room:
         self._conn.execute(
             "UPDATE rooms SET status = ? WHERE number = ?",
@@ -247,20 +302,24 @@ class BookingRepository:
         *,
         room_id: int,
         guest_id: int,
+        price_per_night_cents: int,
         start: date,
         end: date,
         created_at: datetime,
     ) -> Booking:
         cur = self._conn.execute(
             """
-            INSERT INTO bookings (room_id, guest_id, start_date, end_date, status, created_at)
-            VALUES (?, ?, ?, ?, 'reserved', ?)
+            INSERT INTO bookings (
+                room_id, guest_id, start_date, end_date, price_per_night_cents, status, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, 'reserved', ?)
             """,
             (
                 room_id,
                 guest_id,
                 start.isoformat(),
                 end.isoformat(),
+                price_per_night_cents,
                 created_at.isoformat(timespec="seconds"),
             ),
         )
@@ -270,7 +329,7 @@ class BookingRepository:
     def get_by_id(self, booking_id: int) -> Booking:
         row = self._conn.execute(
             """
-            SELECT id, room_id, guest_id, start_date, end_date, status, created_at
+            SELECT id, room_id, guest_id, start_date, end_date, price_per_night_cents, status, created_at
             FROM bookings
             WHERE id = ?
             """,
@@ -284,6 +343,7 @@ class BookingRepository:
             guest_id=int(row["guest_id"]),
             start_date=_parse_iso_date(str(row["start_date"])),
             end_date=_parse_iso_date(str(row["end_date"])),
+            price_per_night_cents=int(row["price_per_night_cents"]),
             status=str(row["status"]),  # type: ignore[assignment]
             created_at=_parse_iso_datetime(str(row["created_at"])),
         )
@@ -302,10 +362,13 @@ class BookingRepository:
             SELECT
                 b.id AS id,
                 r.number AS room_number,
+                r.room_type AS room_type,
+                g.full_name AS guest_name,
                 g.email AS guest_email,
                 b.start_date AS start_date,
                 b.end_date AS end_date,
                 b.status AS status,
+                b.price_per_night_cents AS price_per_night_cents,
                 b.created_at AS created_at
             FROM bookings b
             JOIN rooms r ON r.id = b.room_id
@@ -319,17 +382,20 @@ class BookingRepository:
         return BookingView(
             id=int(row["id"]),
             room_number=str(row["room_number"]),
+            room_type=str(row["room_type"]),
+            guest_name=str(row["guest_name"]),
             guest_email=str(row["guest_email"]),
             start_date=_parse_iso_date(str(row["start_date"])),
             end_date=_parse_iso_date(str(row["end_date"])),
             status=str(row["status"]),  # type: ignore[assignment]
+            price_per_night_cents=int(row["price_per_night_cents"]),
             created_at=_parse_iso_datetime(str(row["created_at"])),
         )
 
     def list_all(self) -> list[Booking]:
         rows = self._conn.execute(
             """
-            SELECT id, room_id, guest_id, start_date, end_date, status, created_at
+            SELECT id, room_id, guest_id, start_date, end_date, price_per_night_cents, status, created_at
             FROM bookings
             ORDER BY created_at DESC
             """
@@ -341,6 +407,7 @@ class BookingRepository:
                 guest_id=int(r["guest_id"]),
                 start_date=_parse_iso_date(str(r["start_date"])),
                 end_date=_parse_iso_date(str(r["end_date"])),
+                price_per_night_cents=int(r["price_per_night_cents"]),
                 status=str(r["status"]),  # type: ignore[assignment]
                 created_at=_parse_iso_datetime(str(r["created_at"])),
             )
@@ -371,10 +438,13 @@ class BookingRepository:
             SELECT
                 b.id AS id,
                 r.number AS room_number,
+                r.room_type AS room_type,
+                g.full_name AS guest_name,
                 g.email AS guest_email,
                 b.start_date AS start_date,
                 b.end_date AS end_date,
                 b.status AS status,
+                b.price_per_night_cents AS price_per_night_cents,
                 b.created_at AS created_at
             FROM bookings b
             JOIN rooms r ON r.id = b.room_id
@@ -388,10 +458,13 @@ class BookingRepository:
             BookingView(
                 id=int(r["id"]),
                 room_number=str(r["room_number"]),
+                room_type=str(r["room_type"]),
+                guest_name=str(r["guest_name"]),
                 guest_email=str(r["guest_email"]),
                 start_date=_parse_iso_date(str(r["start_date"])),
                 end_date=_parse_iso_date(str(r["end_date"])),
                 status=str(r["status"]),  # type: ignore[assignment]
+                price_per_night_cents=int(r["price_per_night_cents"]),
                 created_at=_parse_iso_datetime(str(r["created_at"])),
             )
             for r in rows

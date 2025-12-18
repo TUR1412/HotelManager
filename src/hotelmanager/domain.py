@@ -34,6 +34,7 @@ class Booking:
     guest_id: int
     start_date: date
     end_date: date
+    price_per_night_cents: int
     status: BookingStatus
     created_at: datetime
 
@@ -42,10 +43,13 @@ class Booking:
 class BookingView:
     id: int
     room_number: str
+    room_type: str
+    guest_name: str
     guest_email: str
     start_date: date
     end_date: date
     status: BookingStatus
+    price_per_night_cents: int
     created_at: datetime
 
 
@@ -55,4 +59,3 @@ class HotelStats:
     guest_count: int
     booking_count: int
     reserved_booking_count: int
-

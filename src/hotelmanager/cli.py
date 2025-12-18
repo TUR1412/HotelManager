@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import sys
 import traceback
+import unicodedata
 
 from . import __version__
 from .errors import HotelManagerError, ValidationError
@@ -30,13 +31,25 @@ def _print_table(headers: list[str], rows: list[list[str]]) -> None:
         print("（空）")
         return
 
-    widths = [len(h) for h in headers]
+    def cell_width(value: str) -> int:
+        # 兼容中文等 East Asian 字符的显示宽度，避免表格错位（标准库实现）
+        width = 0
+        for ch in value:
+            if unicodedata.combining(ch):
+                continue
+            width += 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+        return width
+
+    def pad(value: str, target: int) -> str:
+        return value + (" " * max(0, target - cell_width(value)))
+
+    widths = [cell_width(h) for h in headers]
     for row in rows:
         for idx, cell in enumerate(row):
-            widths[idx] = max(widths[idx], len(cell))
+            widths[idx] = max(widths[idx], cell_width(cell))
 
     def fmt_row(values: list[str]) -> str:
-        return "  ".join(v.ljust(widths[i]) for i, v in enumerate(values))
+        return "  ".join(pad(v, widths[i]) for i, v in enumerate(values))
 
     print(fmt_row(headers))
     print(fmt_row(["-" * w for w in widths]))
@@ -224,10 +237,15 @@ def cmd_booking_create(args: argparse.Namespace) -> int:
             start_date=start,
             end_date=end,
         )
+        view = svc.get_booking_view(booking.id)
+        nights = (view.end_date - view.start_date).days
+        total = view.price_per_night_cents * nights
         print(
             "已创建预订："
-            f"#{booking.id}  room_id={booking.room_id}  guest_id={booking.guest_id}  "
-            f"{booking.start_date.isoformat()}~{booking.end_date.isoformat()}"
+            f"#{booking.id}  房间={view.room_number}（{view.room_type}）  "
+            f"住客={view.guest_name} <{view.guest_email}>  "
+            f"{view.start_date.isoformat()}~{view.end_date.isoformat()}（{nights}晚）  "
+            f"总价={format_cents(total)}"
         )
         return 0
     finally:
@@ -245,18 +263,28 @@ def cmd_booking_list(args: argparse.Namespace) -> int:
         )
         rows: list[list[str]] = []
         for b in bookings:
+            nights = (b.end_date - b.start_date).days
+            total = b.price_per_night_cents * nights
             rows.append(
                 [
                     str(b.id),
                     b.room_number,
+                    b.room_type,
+                    b.guest_name,
                     b.guest_email,
                     b.start_date.isoformat(),
                     b.end_date.isoformat(),
+                    str(nights),
+                    format_cents(b.price_per_night_cents),
+                    format_cents(total),
                     b.status,
                     b.created_at.isoformat(timespec="seconds"),
                 ]
             )
-        _print_table(["ID", "房间号", "住客邮箱", "Start", "End", "状态", "创建时间"], rows)
+        _print_table(
+            ["ID", "房间号", "房型", "住客", "邮箱", "Start", "End", "晚数", "每晚", "总价", "状态", "创建时间"],
+            rows,
+        )
         return 0
     finally:
         svc.close()
@@ -278,14 +306,21 @@ def cmd_booking_show(args: argparse.Namespace) -> int:
     try:
         svc.init_db()
         b = svc.get_booking_view(args.id)
+        nights = (b.end_date - b.start_date).days
+        total = b.price_per_night_cents * nights
         _print_table(
             ["字段", "值"],
             [
                 ["ID", str(b.id)],
                 ["房间号", b.room_number],
+                ["房型", b.room_type],
+                ["住客", b.guest_name],
                 ["住客邮箱", b.guest_email],
                 ["Start", b.start_date.isoformat()],
                 ["End", b.end_date.isoformat()],
+                ["晚数", str(nights)],
+                ["每晚价格", format_cents(b.price_per_night_cents)],
+                ["总价", format_cents(total)],
                 ["状态", b.status],
                 ["创建时间", b.created_at.isoformat(timespec="seconds")],
             ],
@@ -294,6 +329,66 @@ def cmd_booking_show(args: argparse.Namespace) -> int:
     finally:
         svc.close()
 
+
+def cmd_room_available(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        start = parse_date(args.start)
+        end = parse_date(args.end)
+        rooms = svc.list_available_rooms(
+            start_date=start,
+            end_date=end,
+            min_capacity=args.min_capacity,
+            room_type=args.type,
+        )
+        rows: list[list[str]] = []
+        for r in rooms:
+            rows.append(
+                [
+                    str(r.id),
+                    r.number,
+                    r.room_type,
+                    str(r.capacity),
+                    format_cents(r.price_per_night_cents),
+                    r.status,
+                ]
+            )
+        print(f"可用房间（{start.isoformat()}~{end.isoformat()}，闭开区间 [start, end)）：")
+        _print_table(["ID", "房间号", "房型", "容量", "每晚价格", "状态"], rows)
+        return 0
+    finally:
+        svc.close()
+
+
+def cmd_booking_quote(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        start = parse_date(args.start)
+        end = parse_date(args.end)
+        room, nights, total_cents = svc.quote_booking_cost(
+            room_number=args.room,
+            start_date=start,
+            end_date=end,
+        )
+        _print_table(
+            ["字段", "值"],
+            [
+                ["房间号", room.number],
+                ["房型", room.room_type],
+                ["容量", str(room.capacity)],
+                ["状态", room.status],
+                ["Start", start.isoformat()],
+                ["End", end.isoformat()],
+                ["晚数", str(nights)],
+                ["每晚价格", format_cents(room.price_per_night_cents)],
+                ["预估总价", format_cents(total_cents)],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
 
 def build_parser() -> argparse.ArgumentParser:
     main_common = _build_common_parser(set_defaults=True)
@@ -364,6 +459,13 @@ def build_parser() -> argparse.ArgumentParser:
     p_room_price.add_argument("--price", required=True, help="每晚价格（示例：399.00）")
     p_room_price.set_defaults(func=cmd_room_price)
 
+    p_room_available = room_sub.add_parser("available", parents=[sub_common], help="查询可用房间（按日期区间）")
+    p_room_available.add_argument("--start", required=True, help="入住日期 YYYY-MM-DD")
+    p_room_available.add_argument("--end", required=True, help="退房日期 YYYY-MM-DD（必须 > start）")
+    p_room_available.add_argument("--min-capacity", type=int, default=None, help="最小容量（可选）")
+    p_room_available.add_argument("--type", default=None, help="房型（可选，大小写不敏感）")
+    p_room_available.set_defaults(func=cmd_room_available)
+
     # guest
     p_guest = sub.add_parser("guest", help="住客管理")
     guest_sub = p_guest.add_subparsers(dest="guest_cmd", required=True)
@@ -412,6 +514,12 @@ def build_parser() -> argparse.ArgumentParser:
     p_booking_show.add_argument("--id", type=int, required=True, help="预订 ID")
     p_booking_show.set_defaults(func=cmd_booking_show)
 
+    p_booking_quote = booking_sub.add_parser("quote", parents=[sub_common], help="预估价格（不创建预订）")
+    p_booking_quote.add_argument("--room", required=True, help="房间号（如 101）")
+    p_booking_quote.add_argument("--start", required=True, help="入住日期 YYYY-MM-DD")
+    p_booking_quote.add_argument("--end", required=True, help="退房日期 YYYY-MM-DD（必须 > start）")
+    p_booking_quote.set_defaults(func=cmd_booking_quote)
+
     return parser
 
 
@@ -432,3 +540,11 @@ def main(argv: list[str] | None = None) -> int:
         if getattr(args, "verbose", False):
             traceback.print_exc()
         return 2
+    except KeyboardInterrupt:
+        print("已中断。", file=sys.stderr)
+        return 130
+    except Exception:
+        print("发生未预期错误。你可以加 --verbose 查看详细堆栈。", file=sys.stderr)
+        if getattr(args, "verbose", False):
+            traceback.print_exc()
+        return 1

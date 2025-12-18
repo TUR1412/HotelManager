@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from typing import Iterable
 
@@ -11,6 +11,10 @@ from . import db as db_module
 from .domain import Booking, BookingView, Guest, HotelStats, Room
 from .errors import BookingConflictError, DatabaseError, NotFoundError, ValidationError
 from .repositories import BookingRepository, GuestRepository, RoomRepository
+
+
+def now_utc() -> datetime:
+    return datetime.now(tz=timezone.utc).replace(microsecond=0)
 
 
 def parse_date(value: str) -> date:
@@ -181,7 +185,7 @@ class HotelManagerService:
                 full_name=full_name,
                 email=email,
                 phone=phone,
-                created_at=datetime.now().astimezone().replace(tzinfo=None),
+                created_at=now_utc(),
             )
         except sqlite3.IntegrityError as e:
             raise ValidationError(f"邮箱已存在：{email}") from e
@@ -241,10 +245,49 @@ class HotelManagerService:
         return booking_repo.create(
             room_id=room.id,
             guest_id=guest.id,
+            price_per_night_cents=room.price_per_night_cents,
             start=start_date,
             end=end_date,
-            created_at=datetime.now().astimezone().replace(tzinfo=None),
+            created_at=now_utc(),
         )
+
+    def list_available_rooms(
+        self,
+        *,
+        start_date: date,
+        end_date: date,
+        min_capacity: int | None = None,
+        room_type: str | None = None,
+    ) -> list[Room]:
+        if end_date <= start_date:
+            raise ValidationError("日期区间不合法：end 必须晚于 start（闭开区间 [start, end)）")
+        if min_capacity is not None:
+            _ensure_positive_int(min_capacity, "最小容量")
+        if room_type is not None:
+            room_type = _ensure_non_empty(room_type, "房型")
+        return RoomRepository(self.conn).list_available(
+            start=start_date,
+            end=end_date,
+            min_capacity=min_capacity,
+            room_type=room_type,
+        )
+
+    def quote_booking_cost(
+        self,
+        *,
+        room_number: str,
+        start_date: date,
+        end_date: date,
+    ) -> tuple[Room, int, int]:
+        room = self.get_room_by_number(room_number)
+        if room.status != "active":
+            raise ValidationError(f"房间不可用（状态={room.status}）：{room.number}")
+        if end_date <= start_date:
+            raise ValidationError("日期区间不合法：end 必须晚于 start（闭开区间 [start, end)）")
+
+        nights = (end_date - start_date).days
+        total_cents = nights * room.price_per_night_cents
+        return room, nights, total_cents
 
     def list_bookings(self) -> list[Booking]:
         return BookingRepository(self.conn).list_all()
