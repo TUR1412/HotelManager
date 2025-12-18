@@ -379,6 +379,32 @@ class HotelManagerService:
         except LookupError as e:
             raise NotFoundError(f"预订不存在：id={booking_id}") from e
 
+    def reschedule_booking(self, *, booking_id: int, start_date: date, end_date: date) -> Booking:
+        _ensure_positive_int(booking_id, "预订ID")
+        if end_date <= start_date:
+            raise ValidationError("退房日期必须晚于入住日期（end > start）")
+
+        repo = BookingRepository(self.conn)
+        try:
+            with db_module.transaction(self.conn, mode="IMMEDIATE"):
+                booking = repo.get_by_id(booking_id)
+                if booking.status != "reserved":
+                    raise ValidationError(f"仅允许对有效预订改期（当前状态={booking.status}）")
+
+                if repo.has_conflict(
+                    room_id=booking.room_id,
+                    start=start_date,
+                    end=end_date,
+                    exclude_booking_id=booking_id,
+                ):
+                    raise BookingConflictError(
+                        f"预订冲突：房间 room_id={booking.room_id} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+                    )
+
+                return repo.update_dates(booking_id, start=start_date, end=end_date)
+        except LookupError as e:
+            raise NotFoundError(f"预订不存在：id={booking_id}") from e
+
     def get_booking_view(self, booking_id: int) -> BookingView:
         _ensure_positive_int(booking_id, "预订ID")
         view = BookingRepository(self.conn).get_view_by_id(booking_id)

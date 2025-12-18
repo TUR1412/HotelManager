@@ -286,17 +286,34 @@ class BookingRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:
         self._conn = conn
 
-    def has_conflict(self, *, room_id: int, start: date, end: date) -> bool:
+    def has_conflict(
+        self,
+        *,
+        room_id: int,
+        start: date,
+        end: date,
+        exclude_booking_id: int | None = None,
+    ) -> bool:
+        conditions: list[str] = [
+            "room_id = ?",
+            "status = 'reserved'",
+            "NOT (end_date <= ? OR start_date >= ?)",
+        ]
+        params: list[object] = [room_id, start.isoformat(), end.isoformat()]
+
+        if exclude_booking_id is not None:
+            conditions.append("id != ?")
+            params.append(exclude_booking_id)
+
+        where_clause = " AND ".join(conditions)
         row = self._conn.execute(
-            """
+            f"""
             SELECT 1
             FROM bookings
-            WHERE room_id = ?
-              AND status = 'reserved'
-              AND NOT (end_date <= ? OR start_date >= ?)
+            WHERE {where_clause}
             LIMIT 1
             """,
-            (room_id, start.isoformat(), end.isoformat()),
+            params,
         ).fetchone()
         return row is not None
 
@@ -355,6 +372,14 @@ class BookingRepository:
         self._conn.execute(
             "UPDATE bookings SET status = 'cancelled' WHERE id = ?",
             (booking_id,),
+        )
+        self._conn.commit()
+        return self.get_by_id(booking_id)
+
+    def update_dates(self, booking_id: int, *, start: date, end: date) -> Booking:
+        self._conn.execute(
+            "UPDATE bookings SET start_date = ?, end_date = ? WHERE id = ?",
+            (start.isoformat(), end.isoformat(), booking_id),
         )
         self._conn.commit()
         return self.get_by_id(booking_id)

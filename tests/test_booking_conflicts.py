@@ -247,3 +247,46 @@ class BookingConflictTests(unittest.TestCase):
             end_date=date(2025, 12, 22),
         )
         self.assertEqual([r.number for r in available], ["102"])
+
+    def test_booking_can_be_rescheduled(self) -> None:
+        booking = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        updated = self.svc.reschedule_booking(
+            booking_id=booking.id,
+            start_date=date(2025, 12, 24),
+            end_date=date(2025, 12, 26),
+        )
+        self.assertEqual(updated.id, booking.id)
+        view = self.svc.get_booking_view(booking.id)
+        self.assertEqual(view.start_date, date(2025, 12, 24))
+        self.assertEqual(view.end_date, date(2025, 12, 26))
+
+    def test_booking_reschedule_detects_conflict(self) -> None:
+        booking1 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        booking2 = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 22),
+            end_date=date(2025, 12, 24),
+        )
+
+        with self.assertRaises(BookingConflictError):
+            self.svc.reschedule_booking(
+                booking_id=booking2.id,
+                start_date=date(2025, 12, 21),
+                end_date=date(2025, 12, 23),
+            )
+
+        # 原预订保持不变
+        view2 = self.svc.get_booking_view(booking2.id)
+        self.assertEqual(view2.start_date, date(2025, 12, 22))
+        self.assertEqual(view2.end_date, date(2025, 12, 24))
