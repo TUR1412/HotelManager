@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+import re
 from typing import Iterable
 
 import sqlite3
@@ -34,8 +35,24 @@ def parse_date(value: str) -> date:
 
 
 def parse_money_to_cents(value: str) -> int:
+    raw = value.strip()
+    cleaned = raw.replace(",", "")
+    cleaned = cleaned.lstrip("¥￥$")
+
+    if not cleaned:
+        raise ValidationError("价格不能为空")
+
+    # 不做过度复杂的货币解析：拒绝科学计数法、字母等；允许 `399` / `399.00` / `¥399.00` / `1,299.99`
+    if not re.fullmatch(r"\d+(?:\.\d+)?", cleaned):
+        raise ValidationError(f"价格格式错误：{value}（示例：399.00）")
+
+    if "." in cleaned:
+        _, frac = cleaned.split(".", 1)
+        if len(frac) > 2 and any(ch != "0" for ch in frac[2:]):
+            raise ValidationError(f"价格最多保留 2 位小数：{value}")
+
     try:
-        d = Decimal(value)
+        d = Decimal(cleaned)
     except InvalidOperation as e:
         raise ValidationError(f"价格格式错误：{value}（示例：399.00）") from e
 
