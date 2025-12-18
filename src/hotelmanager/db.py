@@ -118,7 +118,20 @@ def connect(db_path: str) -> sqlite3.Connection:
     conn.execute("PRAGMA foreign_keys = ON;")
     conn.execute("PRAGMA busy_timeout = 5000;")
     if db_path != ":memory:":
-        conn.execute("PRAGMA journal_mode = WAL;")
+        try:
+            mode = str(conn.execute("PRAGMA journal_mode = WAL;").fetchone()[0])
+        except sqlite3.OperationalError as e:  # pragma: no cover
+            raise DatabaseError(
+                "无法启用 SQLite WAL 模式。请确认数据库路径可写、位于本地磁盘，且未被只读权限限制。"
+                f"db_path={db_path!r}"
+            ) from e
+
+        if mode.lower() != "wal":  # pragma: no cover
+            raise DatabaseError(
+                "SQLite 未能切换到 WAL 模式（未静默降级）。"
+                f"当前 journal_mode={mode!r}，请更换数据库路径或检查文件系统兼容性。"
+                f"db_path={db_path!r}"
+            )
     return conn
 
 
