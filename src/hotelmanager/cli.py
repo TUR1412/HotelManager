@@ -375,6 +375,37 @@ def cmd_booking_reschedule(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_booking_extend(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        end = parse_date(args.end)
+        updated = svc.extend_booking(booking_id=args.id, end_date=end)
+        view = svc.get_booking_view(updated.id)
+
+        nights = (view.end_date - view.start_date).days
+        total = view.price_per_night_cents * nights
+        print(f"已延住预订：#{view.id}")
+        _print_table(
+            ["字段", "值"],
+            [
+                ["房间号", view.room_number],
+                ["房型", view.room_type],
+                ["住客", view.guest_name],
+                ["邮箱", view.guest_email],
+                ["Start", view.start_date.isoformat()],
+                ["End", view.end_date.isoformat()],
+                ["晚数", str(nights)],
+                ["每晚价格", format_cents(view.price_per_night_cents)],
+                ["总价", format_cents(total)],
+                ["状态", view.status],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_room_available(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -564,6 +595,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_booking_reschedule.add_argument("--start", required=True, help="入住日期 YYYY-MM-DD")
     p_booking_reschedule.add_argument("--end", required=True, help="退房日期 YYYY-MM-DD（必须 > start）")
     p_booking_reschedule.set_defaults(func=cmd_booking_reschedule)
+
+    p_booking_extend = booking_sub.add_parser("extend", parents=[sub_common], help="预订延住（仅延后退房日期）")
+    p_booking_extend.add_argument("--id", type=int, required=True, help="预订 ID")
+    p_booking_extend.add_argument("--end", required=True, help="新的退房日期 YYYY-MM-DD（必须 > 当前 end）")
+    p_booking_extend.set_defaults(func=cmd_booking_extend)
 
     p_booking_quote = booking_sub.add_parser("quote", parents=[sub_common], help="预估价格（不创建预订）")
     p_booking_quote.add_argument("--room", required=True, help="房间号（如 101）")
