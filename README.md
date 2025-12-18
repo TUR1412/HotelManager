@@ -93,6 +93,12 @@ python -m hotelmanager guest list --db hotelmanager.db
 python -m hotelmanager booking list --db hotelmanager.db
 ```
 
+查看某条预订详情：
+
+```bash
+python -m hotelmanager booking show --id 1 --db hotelmanager.db
+```
+
 按条件筛选预订：
 
 ```bash

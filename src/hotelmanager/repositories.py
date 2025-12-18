@@ -237,6 +237,36 @@ class BookingRepository:
         self._conn.commit()
         return self.get_by_id(booking_id)
 
+    def get_view_by_id(self, booking_id: int) -> BookingView | None:
+        row = self._conn.execute(
+            """
+            SELECT
+                b.id AS id,
+                r.number AS room_number,
+                g.email AS guest_email,
+                b.start_date AS start_date,
+                b.end_date AS end_date,
+                b.status AS status,
+                b.created_at AS created_at
+            FROM bookings b
+            JOIN rooms r ON r.id = b.room_id
+            JOIN guests g ON g.id = b.guest_id
+            WHERE b.id = ?
+            """,
+            (booking_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return BookingView(
+            id=int(row["id"]),
+            room_number=str(row["room_number"]),
+            guest_email=str(row["guest_email"]),
+            start_date=_parse_iso_date(str(row["start_date"])),
+            end_date=_parse_iso_date(str(row["end_date"])),
+            status=str(row["status"]),  # type: ignore[assignment]
+            created_at=_parse_iso_datetime(str(row["created_at"])),
+        )
+
     def list_all(self) -> list[Booking]:
         rows = self._conn.execute(
             """
@@ -307,4 +337,3 @@ class BookingRepository:
             )
             for r in rows
         ]
-

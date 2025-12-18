@@ -218,6 +218,28 @@ def cmd_booking_cancel(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_booking_show(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        b = svc.get_booking_view(args.id)
+        _print_table(
+            ["字段", "值"],
+            [
+                ["ID", str(b.id)],
+                ["房间号", b.room_number],
+                ["住客邮箱", b.guest_email],
+                ["Start", b.start_date.isoformat()],
+                ["End", b.end_date.isoformat()],
+                ["状态", b.status],
+                ["创建时间", b.created_at.isoformat(timespec="seconds")],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def build_parser() -> argparse.ArgumentParser:
     main_common = _build_common_parser(set_defaults=True)
     sub_common = _build_common_parser(set_defaults=False)
@@ -310,6 +332,10 @@ def build_parser() -> argparse.ArgumentParser:
     p_booking_cancel = booking_sub.add_parser("cancel", parents=[sub_common], help="取消预订")
     p_booking_cancel.add_argument("--id", type=int, required=True, help="预订 ID")
     p_booking_cancel.set_defaults(func=cmd_booking_cancel)
+
+    p_booking_show = booking_sub.add_parser("show", parents=[sub_common], help="查看预订详情")
+    p_booking_show.add_argument("--id", type=int, required=True, help="预订 ID")
+    p_booking_show.set_defaults(func=cmd_booking_show)
 
     return parser
 

@@ -241,6 +241,13 @@ class HotelManagerService:
         except LookupError as e:
             raise NotFoundError(f"预订不存在：id={booking_id}") from e
 
+    def get_booking_view(self, booking_id: int) -> BookingView:
+        _ensure_positive_int(booking_id, "预订ID")
+        view = BookingRepository(self.conn).get_view_by_id(booking_id)
+        if view is None:
+            raise NotFoundError(f"预订不存在：id={booking_id}")
+        return view
+
 
 def close_quietly(services: Iterable[HotelManagerService]) -> None:
     for service in services:
@@ -248,4 +255,3 @@ def close_quietly(services: Iterable[HotelManagerService]) -> None:
             service.close()
         except Exception:
             pass
-

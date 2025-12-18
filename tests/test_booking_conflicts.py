@@ -167,3 +167,14 @@ class BookingConflictTests(unittest.TestCase):
         cancelled_only = self.svc.list_booking_views_filtered(status="cancelled")
         self.assertEqual([b.id for b in cancelled_only], [booking1.id])
 
+    def test_booking_view_by_id(self) -> None:
+        booking = self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+        view = self.svc.get_booking_view(booking.id)
+        self.assertEqual(view.id, booking.id)
+        self.assertEqual(view.room_number, "101")
+        self.assertEqual(view.guest_email, "alice@example.com")
