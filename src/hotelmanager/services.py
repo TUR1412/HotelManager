@@ -65,11 +65,26 @@ def _ensure_email(value: str, field_name: str) -> str:
         raise ValidationError(f"{field_name} 不能包含空格")
 
     if email.count("@") != 1:
-        raise ValidationError(f"{field_name} 格式不正确：{email}")
+        raise ValidationError(f"{field_name} 格式不正确：缺少或包含多个 @（{email}）")
 
     local_part, domain_part = email.split("@")
-    if not local_part or not domain_part or "." not in domain_part:
-        raise ValidationError(f"{field_name} 格式不正确：{email}")
+    if not local_part:
+        raise ValidationError(f"{field_name} 格式不正确：@ 前不能为空（{email}）")
+    if not domain_part:
+        raise ValidationError(f"{field_name} 格式不正确：@ 后不能为空（{email}）")
+    if "." not in domain_part:
+        raise ValidationError(f"{field_name} 格式不正确：域名缺少 .（{email}）")
+    if domain_part.startswith(".") or domain_part.endswith("."):
+        raise ValidationError(f"{field_name} 格式不正确：域名不能以 . 开头/结尾（{email}）")
+
+    if ".." in email:
+        raise ValidationError(f"{field_name} 格式不正确：不能包含连续的 .（{email}）")
+
+    # RFC 相关上限（不做过度严格校验，但尽量避免异常输入）
+    if len(email) > 254:
+        raise ValidationError(f"{field_name} 过长（>254）：{email}")
+    if len(local_part) > 64:
+        raise ValidationError(f"{field_name} 本地部分过长（>64）：{email}")
 
     return email.lower()
 
