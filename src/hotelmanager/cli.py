@@ -86,6 +86,17 @@ def cmd_room_list(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_room_status(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        room = svc.set_room_status(number=args.number, status=args.status)
+        print(f"已更新房间状态：房间号={room.number}  状态={room.status}")
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_guest_add(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -218,6 +229,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     p_room_list = room_sub.add_parser("list", help="查看房间列表")
     p_room_list.set_defaults(func=cmd_room_list)
+
+    p_room_status = room_sub.add_parser("status", help="设置房间状态")
+    p_room_status.add_argument("--number", required=True, help="房间号（如 101）")
+    p_room_status.add_argument(
+        "--status",
+        required=True,
+        choices=["active", "maintenance"],
+        help="目标状态",
+    )
+    p_room_status.set_defaults(func=cmd_room_status)
 
     # guest
     p_guest = sub.add_parser("guest", help="住客管理")

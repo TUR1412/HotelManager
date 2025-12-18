@@ -85,6 +85,17 @@ class RoomRepository:
             for r in rows
         ]
 
+    def set_status_by_number(self, number: str, status: str) -> Room:
+        self._conn.execute(
+            "UPDATE rooms SET status = ? WHERE number = ?",
+            (status, number),
+        )
+        self._conn.commit()
+        room = self.get_by_number(number)
+        if room is None:
+            raise LookupError(f"room.number={number} 不存在")
+        return room
+
 
 class GuestRepository:
     def __init__(self, conn: sqlite3.Connection) -> None:

@@ -87,3 +87,13 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(views[0].room_number, "101")
         self.assertEqual(views[0].guest_email, "alice@example.com")
 
+    def test_maintenance_room_rejects_booking(self) -> None:
+        self.svc.set_room_status(number="101", status="maintenance")
+        with self.assertRaises(ValidationError):
+            self.svc.create_booking(
+                room_number="101",
+                guest_email="alice@example.com",
+                start_date=date(2025, 12, 20),
+                end_date=date(2025, 12, 22),
+            )
+

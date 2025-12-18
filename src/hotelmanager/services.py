@@ -99,6 +99,16 @@ class HotelManagerService:
     def list_rooms(self) -> list[Room]:
         return RoomRepository(self.conn).list_all()
 
+    def set_room_status(self, *, number: str, status: str) -> Room:
+        number = _ensure_non_empty(number, "房间号")
+        if status not in ("active", "maintenance"):
+            raise ValidationError(f"未知房间状态：{status}")
+
+        try:
+            return RoomRepository(self.conn).set_status_by_number(number, status)
+        except LookupError as e:
+            raise NotFoundError(f"房间不存在：{number}") from e
+
     # Guests
     def add_guest(
         self,
