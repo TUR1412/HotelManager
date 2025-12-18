@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sqlite3
 import sys
 import traceback
@@ -24,7 +25,17 @@ def _build_common_parser(*, set_defaults: bool) -> argparse.ArgumentParser:
         default=False if set_defaults else argparse.SUPPRESS,
         help="输出详细异常堆栈（用于排错）",
     )
+    parser.add_argument(
+        "--json",
+        action="store_true",
+        default=False if set_defaults else argparse.SUPPRESS,
+        help="以 JSON 输出（适合脚本化）",
+    )
     return parser
+
+
+def _print_json(data: object) -> None:
+    print(json.dumps(data, ensure_ascii=False, indent=2))
 
 
 def _print_table(headers: list[str], rows: list[list[str]]) -> None:
@@ -90,6 +101,21 @@ def cmd_room_list(args: argparse.Namespace) -> int:
     try:
         svc.init_db()
         rooms = svc.list_rooms_filtered(status=args.status, min_capacity=args.min_capacity, room_type=args.type)
+        if getattr(args, "json", False):
+            _print_json(
+                [
+                    {
+                        "id": r.id,
+                        "number": r.number,
+                        "room_type": r.room_type,
+                        "capacity": r.capacity,
+                        "price_per_night_cents": r.price_per_night_cents,
+                        "status": r.status,
+                    }
+                    for r in rooms
+                ]
+            )
+            return 0
         rows: list[list[str]] = []
         for r in rooms:
             rows.append(
@@ -114,6 +140,25 @@ def cmd_doctor(args: argparse.Namespace) -> int:
         svc.init_db()
         stats = svc.get_stats()
         info = svc.get_db_info()
+        if getattr(args, "json", False):
+            _print_json(
+                {
+                    "stats": {
+                        "room_count": stats.room_count,
+                        "guest_count": stats.guest_count,
+                        "booking_count": stats.booking_count,
+                        "reserved_booking_count": stats.reserved_booking_count,
+                    },
+                    "db": {
+                        "sqlite_version": info.sqlite_version,
+                        "schema_user_version": info.user_version,
+                        "journal_mode": info.journal_mode,
+                        "foreign_keys": info.foreign_keys,
+                        "busy_timeout_ms": info.busy_timeout_ms,
+                    },
+                }
+            )
+            return 0
         _print_table(
             ["项目", "数量"],
             [
@@ -148,6 +193,17 @@ def cmd_stats_revenue(args: argparse.Namespace) -> int:
         report = svc.get_revenue_report(start_date=start, end_date=end)
 
         avg = 0 if report.room_nights == 0 else report.revenue_cents // report.room_nights
+        if getattr(args, "json", False):
+            _print_json(
+                {
+                    "range": {"start": start.isoformat(), "end": end.isoformat()},
+                    "booking_count": report.booking_count,
+                    "room_nights": report.room_nights,
+                    "revenue_cents": report.revenue_cents,
+                    "avg_price_per_night_cents": avg,
+                }
+            )
+            return 0
         _print_table(
             ["项目", "值"],
             [
@@ -225,6 +281,20 @@ def cmd_guest_list(args: argparse.Namespace) -> int:
     try:
         svc.init_db()
         guests = svc.list_guests_filtered(args.q)
+        if getattr(args, "json", False):
+            _print_json(
+                [
+                    {
+                        "id": g.id,
+                        "full_name": g.full_name,
+                        "email": g.email,
+                        "phone": g.phone,
+                        "created_at": g.created_at.isoformat(timespec="seconds"),
+                    }
+                    for g in guests
+                ]
+            )
+            return 0
         rows: list[list[str]] = []
         for g in guests:
             rows.append(
@@ -302,6 +372,27 @@ def cmd_booking_list(args: argparse.Namespace) -> int:
             overlap_start=overlap_start,
             overlap_end=overlap_end,
         )
+        if getattr(args, "json", False):
+            _print_json(
+                [
+                    {
+                        "id": b.id,
+                        "room_number": b.room_number,
+                        "room_type": b.room_type,
+                        "guest_name": b.guest_name,
+                        "guest_email": b.guest_email,
+                        "start_date": b.start_date.isoformat(),
+                        "end_date": b.end_date.isoformat(),
+                        "nights": (b.end_date - b.start_date).days,
+                        "price_per_night_cents": b.price_per_night_cents,
+                        "total_cents": b.price_per_night_cents * (b.end_date - b.start_date).days,
+                        "status": b.status,
+                        "created_at": b.created_at.isoformat(timespec="seconds"),
+                    }
+                    for b in bookings
+                ]
+            )
+            return 0
         rows: list[list[str]] = []
         for b in bookings:
             nights = (b.end_date - b.start_date).days
@@ -446,6 +537,24 @@ def cmd_room_available(args: argparse.Namespace) -> int:
             min_capacity=args.min_capacity,
             room_type=args.type,
         )
+        if getattr(args, "json", False):
+            _print_json(
+                {
+                    "range": {"start": start.isoformat(), "end": end.isoformat()},
+                    "rooms": [
+                        {
+                            "id": r.id,
+                            "number": r.number,
+                            "room_type": r.room_type,
+                            "capacity": r.capacity,
+                            "price_per_night_cents": r.price_per_night_cents,
+                            "status": r.status,
+                        }
+                        for r in rooms
+                    ],
+                }
+            )
+            return 0
         rows: list[list[str]] = []
         for r in rooms:
             rows.append(
@@ -476,6 +585,23 @@ def cmd_booking_quote(args: argparse.Namespace) -> int:
             start_date=start,
             end_date=end,
         )
+        if getattr(args, "json", False):
+            _print_json(
+                {
+                    "room": {
+                        "id": room.id,
+                        "number": room.number,
+                        "room_type": room.room_type,
+                        "capacity": room.capacity,
+                        "price_per_night_cents": room.price_per_night_cents,
+                        "status": room.status,
+                    },
+                    "range": {"start": start.isoformat(), "end": end.isoformat()},
+                    "nights": nights,
+                    "total_cents": total_cents,
+                }
+            )
+            return 0
         _print_table(
             ["字段", "值"],
             [
