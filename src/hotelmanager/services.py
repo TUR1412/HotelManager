@@ -13,6 +13,15 @@ from .errors import BookingConflictError, DatabaseError, NotFoundError, Validati
 from .repositories import BookingRepository, GuestRepository, RoomRepository
 
 
+@dataclass(frozen=True, slots=True)
+class DbInfo:
+    user_version: int
+    sqlite_version: str
+    journal_mode: str
+    foreign_keys: bool
+    busy_timeout_ms: int
+
+
 def now_utc() -> datetime:
     return datetime.now(tz=timezone.utc).replace(microsecond=0)
 
@@ -101,6 +110,20 @@ class HotelManagerService:
             guest_count=guest_count,
             booking_count=booking_count,
             reserved_booking_count=reserved_booking_count,
+        )
+
+    def get_db_info(self) -> DbInfo:
+        user_version = int(self.conn.execute("PRAGMA user_version;").fetchone()[0])
+        journal_mode = str(self.conn.execute("PRAGMA journal_mode;").fetchone()[0])
+        foreign_keys = bool(int(self.conn.execute("PRAGMA foreign_keys;").fetchone()[0]))
+        busy_timeout_ms = int(self.conn.execute("PRAGMA busy_timeout;").fetchone()[0])
+        sqlite_version = str(self.conn.execute("SELECT sqlite_version();").fetchone()[0])
+        return DbInfo(
+            user_version=user_version,
+            sqlite_version=sqlite_version,
+            journal_mode=journal_mode,
+            foreign_keys=foreign_keys,
+            busy_timeout_ms=busy_timeout_ms,
         )
 
     # Rooms

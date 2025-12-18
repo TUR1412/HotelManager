@@ -112,6 +112,7 @@ def cmd_doctor(args: argparse.Namespace) -> int:
     try:
         svc.init_db()
         stats = svc.get_stats()
+        info = svc.get_db_info()
         _print_table(
             ["项目", "数量"],
             [
@@ -119,6 +120,17 @@ def cmd_doctor(args: argparse.Namespace) -> int:
                 ["住客数", str(stats.guest_count)],
                 ["预订数", str(stats.booking_count)],
                 ["有效预订", str(stats.reserved_booking_count)],
+            ],
+        )
+        print("")
+        _print_table(
+            ["项目", "值"],
+            [
+                ["SQLite", info.sqlite_version],
+                ["schema(user_version)", str(info.user_version)],
+                ["journal_mode", info.journal_mode],
+                ["foreign_keys", "ON" if info.foreign_keys else "OFF"],
+                ["busy_timeout(ms)", str(info.busy_timeout_ms)],
             ],
         )
         return 0
