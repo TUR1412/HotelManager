@@ -64,4 +64,3 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report.booking_count, 0)
         self.assertEqual(report.room_nights, 0)
         self.assertEqual(report.revenue_cents, 0)
-

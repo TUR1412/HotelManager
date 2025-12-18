@@ -737,6 +737,7 @@ def cmd_export_bookings(args: argparse.Namespace) -> int:
     finally:
         svc.close()
 
+
 def build_parser() -> argparse.ArgumentParser:
     main_common = _build_common_parser(set_defaults=True)
     sub_common = _build_common_parser(set_defaults=False)

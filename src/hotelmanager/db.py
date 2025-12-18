@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import sqlite3
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Iterator, Literal
+from typing import Literal
 
 from .errors import DatabaseError
-
 
 SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS rooms (
@@ -177,7 +177,7 @@ def _validate_schema(conn: sqlite3.Connection) -> None:
             raise DatabaseError(f"数据库缺少必要的数据表：{table}。请先运行 `init` 或删除损坏的 db 文件。")
 
         rows = conn.execute(f"PRAGMA table_info({table});").fetchall()
-        columns = {str(r['name']) for r in rows}
+        columns = {str(r["name"]) for r in rows}
         missing = sorted(required - columns)
         if missing:
             raise DatabaseError(
@@ -202,8 +202,7 @@ def connect(db_path: str) -> sqlite3.Connection:
             mode = str(conn.execute("PRAGMA journal_mode = WAL;").fetchone()[0])
         except sqlite3.OperationalError as e:  # pragma: no cover
             raise DatabaseError(
-                "无法启用 SQLite WAL 模式。请确认数据库路径可写、位于本地磁盘，且未被只读权限限制。"
-                f"db_path={db_path!r}"
+                f"无法启用 SQLite WAL 模式。请确认数据库路径可写、位于本地磁盘，且未被只读权限限制。db_path={db_path!r}"
             ) from e
 
         if mode.lower() != "wal":  # pragma: no cover

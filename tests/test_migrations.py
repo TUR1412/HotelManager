@@ -8,7 +8,6 @@ from datetime import date
 
 from hotelmanager.services import HotelManagerService
 
-
 LEGACY_SCHEMA_V1 = """
 CREATE TABLE IF NOT EXISTS rooms (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,4 +103,3 @@ class MigrationTests(unittest.TestCase):
                 self.assertGreaterEqual(info.user_version, 2)
             finally:
                 svc.close()
-

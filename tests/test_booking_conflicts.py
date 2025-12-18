@@ -314,7 +314,7 @@ class BookingConflictTests(unittest.TestCase):
         self.assertEqual(view.end_date, date(2025, 12, 26))
 
     def test_booking_reschedule_detects_conflict(self) -> None:
-        booking1 = self.svc.create_booking(
+        self.svc.create_booking(
             room_number="101",
             guest_email="alice@example.com",
             start_date=date(2025, 12, 20),
@@ -346,7 +346,7 @@ class BookingConflictTests(unittest.TestCase):
             start_date=date(2025, 12, 22),
             end_date=date(2025, 12, 24),
         )
-        booking3 = self.svc.create_booking(
+        self.svc.create_booking(
             room_number="101",
             guest_email="alice@example.com",
             start_date=date(2025, 12, 24),

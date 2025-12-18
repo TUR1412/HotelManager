@@ -19,4 +19,3 @@ class BookingConflictError(HotelManagerError):
 
 class DatabaseError(HotelManagerError):
     pass
-

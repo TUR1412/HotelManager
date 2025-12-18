@@ -1,12 +1,11 @@
 from __future__ import annotations
 
+import re
+import sqlite3
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
-from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-import re
-from typing import Iterable
-
-import sqlite3
+from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
 from . import db as db_module
 from .domain import Booking, BookingView, Guest, HotelStats, Room
@@ -125,7 +124,7 @@ class HotelManagerService:
     conn: sqlite3.Connection
 
     @classmethod
-    def open(cls, db_path: str) -> "HotelManagerService":
+    def open(cls, db_path: str) -> HotelManagerService:
         try:
             conn = db_module.connect(db_path)
         except Exception as e:  # pragma: no cover
@@ -435,7 +434,8 @@ class HotelManagerService:
                     exclude_booking_id=booking_id,
                 ):
                     raise BookingConflictError(
-                        f"预订冲突：房间 room_id={booking.room_id} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+                        "预订冲突：房间 "
+                        f"room_id={booking.room_id} 在 {start_date.isoformat()}~{end_date.isoformat()} 已被占用"
                     )
 
                 return repo.update_dates(booking_id, start=start_date, end=end_date)
@@ -464,7 +464,8 @@ class HotelManagerService:
                     exclude_booking_id=booking_id,
                 ):
                     raise BookingConflictError(
-                        f"预订冲突：房间 room_id={booking.room_id} 在 {booking.start_date.isoformat()}~{end_date.isoformat()} 已被占用"
+                        "预订冲突：房间 "
+                        f"room_id={booking.room_id} 在 {booking.start_date.isoformat()}~{end_date.isoformat()} 已被占用"
                     )
 
                 return repo.update_dates(booking_id, start=booking.start_date, end=end_date)
