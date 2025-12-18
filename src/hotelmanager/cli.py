@@ -4,6 +4,7 @@ import argparse
 import sys
 import traceback
 
+from . import __version__
 from .errors import HotelManagerError, ValidationError
 from .services import HotelManagerService, format_cents, parse_date, parse_money_to_cents
 
@@ -185,6 +186,12 @@ def build_parser() -> argparse.ArgumentParser:
         "--verbose",
         action="store_true",
         help="输出详细异常堆栈（用于排错）",
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
+        help="输出版本号并退出",
     )
 
     sub = parser.add_subparsers(dest="command", required=True)

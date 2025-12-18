@@ -32,6 +32,12 @@
 python -m hotelmanager init --db hotelmanager.db
 ```
 
+查看版本：
+
+```bash
+python -m hotelmanager --version
+```
+
 新增房间：
 
 ```bash
