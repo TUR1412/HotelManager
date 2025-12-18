@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import sqlite3
+from contextlib import contextmanager
 from pathlib import Path
+from typing import Iterator, Literal
 
 from .errors import DatabaseError
 
@@ -49,6 +51,38 @@ CREATE INDEX IF NOT EXISTS idx_bookings_room_status_dates
 """
 
 CURRENT_SCHEMA_VERSION = 2
+
+
+TransactionMode = Literal["DEFERRED", "IMMEDIATE"]
+
+
+@contextmanager
+def transaction(conn: sqlite3.Connection, *, mode: TransactionMode = "DEFERRED") -> Iterator[None]:
+    """
+    事务工具（统一 commit/rollback 入口）。
+
+    - 默认 DEFERRED：读写按需升级锁
+    - IMMEDIATE：一开始就获取写锁（用于避免并发“双订”等竞态）
+
+    说明：
+    - 若当前连接已在事务中，则不会开启/提交/回滚（交由外层事务管理）。
+    """
+    if mode not in ("DEFERRED", "IMMEDIATE"):
+        raise ValueError(f"未知事务模式：{mode}")
+
+    started_here = False
+    try:
+        if not conn.in_transaction:
+            conn.execute("BEGIN;" if mode == "DEFERRED" else "BEGIN IMMEDIATE;")
+            started_here = True
+        yield
+    except Exception:
+        if started_here:
+            conn.rollback()
+        raise
+    else:
+        if started_here:
+            conn.commit()
 
 
 def _get_user_version(conn: sqlite3.Connection) -> int:
