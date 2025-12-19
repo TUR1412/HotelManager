@@ -9,6 +9,9 @@
 - **CLI 层**：`src/hotelmanager/cli.py`
   - 负责解析参数、组织输出、将用户输入转为领域可用的数据类型（如日期/金额）。
   - 不直接写 SQL，不直接拼接数据库逻辑。
+- **Web UI（静态预览）**：`web/`
+  - 以静态页面形式提供管理台体验基线，强调视觉与交互规范。
+  - 不依赖后端服务，便于设计评审与演进。
 - **应用服务层**：`src/hotelmanager/services.py`
   - 承载业务规则：校验、预订冲突检测、状态约束等。
   - 对外提供“可组合”的方法（例如 `create_booking`、`set_room_status`、`list_booking_views_filtered`）。
@@ -62,6 +65,11 @@
 - 核心逻辑由 `HotelManagerService` 提供，可在 `:memory:` SQLite 下快速测试
 - 单元测试集中在 `tests/`
 
+## 6. Web UI（静态管理台）
+
+UI 位于 `web/`，为静态预览页面，不依赖后端服务。  
+设计原则与组件说明见：`docs/UI.md`。
+
 本地运行：
 
 ```bash
@@ -69,7 +77,7 @@ PYTHONPATH=src python -m unittest discover -s tests -v
 PYTHONPATH=src python -m compileall -q src tests
 ```
 
-## 6. 数据库迁移（Schema Migration）
+## 7. 数据库迁移（Schema Migration）
 
 为避免“用户已有数据库文件无法升级”的问题，`init_db` 会：
 

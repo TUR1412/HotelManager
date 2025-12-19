@@ -160,6 +160,12 @@ python -m hotelmanager booking extend --id 1 --end 2025-12-27 --db hotelmanager.
 python -m hotelmanager stats revenue --start 2025-12-20 --end 2025-12-30 --db hotelmanager.db
 ```
 
+入住率统计（按已售房晚 / 可售房晚）：
+
+```bash
+python -m hotelmanager stats occupancy --start 2025-12-20 --end 2025-12-30 --db hotelmanager.db
+```
+
 ## 6. 导出（export）
 
 导出 CSV（默认输出到 stdout，可用 `--out` 写文件）：

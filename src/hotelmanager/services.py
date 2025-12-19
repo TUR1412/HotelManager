@@ -29,6 +29,14 @@ class RevenueReport:
     revenue_cents: int
 
 
+@dataclass(frozen=True, slots=True)
+class OccupancyReport:
+    room_count: int
+    room_nights: int
+    available_room_nights: int
+    occupancy_rate: float
+
+
 def now_utc() -> datetime:
     # 统一存储：UTC 但以 naive datetime 写入（避免“naive/aware 混用”导致比较时报错）。
     return datetime.now(tz=timezone.utc).replace(microsecond=0, tzinfo=None)
@@ -175,6 +183,23 @@ class HotelManagerService:
             booking_count=booking_count,
             room_nights=room_nights,
             revenue_cents=revenue_cents,
+        )
+
+    def get_occupancy_report(self, *, start_date: date, end_date: date) -> OccupancyReport:
+        if end_date <= start_date:
+            raise ValidationError("日期区间不合法：end 必须晚于 start（闭开区间 [start, end)）")
+        days = (end_date - start_date).days
+        room_count = RoomRepository(self.conn).count_active()
+        available_room_nights = room_count * days
+        _, room_nights, _ = BookingRepository(self.conn).get_revenue_for_range(
+            start=start_date, end=end_date
+        )
+        occupancy_rate = 0.0 if available_room_nights == 0 else room_nights / available_room_nights
+        return OccupancyReport(
+            room_count=room_count,
+            room_nights=room_nights,
+            available_room_nights=available_room_nights,
+            occupancy_rate=occupancy_rate,
         )
 
     # Rooms

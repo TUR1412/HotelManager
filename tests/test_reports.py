@@ -64,3 +64,27 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(report.booking_count, 0)
         self.assertEqual(report.room_nights, 0)
         self.assertEqual(report.revenue_cents, 0)
+
+    def test_occupancy_report(self) -> None:
+        self.svc.add_room(
+            number="102",
+            room_type="double",
+            capacity=2,
+            price_per_night_cents=20000,
+            status="active",
+        )
+        self.svc.create_booking(
+            room_number="101",
+            guest_email="alice@example.com",
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 22),
+        )
+
+        report = self.svc.get_occupancy_report(
+            start_date=date(2025, 12, 20),
+            end_date=date(2025, 12, 23),
+        )
+        self.assertEqual(report.room_count, 2)
+        self.assertEqual(report.available_room_nights, 6)
+        self.assertEqual(report.room_nights, 2)
+        self.assertAlmostEqual(report.occupancy_rate, 2 / 6, places=4)

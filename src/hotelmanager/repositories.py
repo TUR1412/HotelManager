@@ -88,6 +88,10 @@ class RoomRepository:
             for r in rows
         ]
 
+    def count_active(self) -> int:
+        row = self._conn.execute("SELECT COUNT(*) FROM rooms WHERE status = 'active'").fetchone()
+        return int(row[0])
+
     def list_filtered(self, *, status: str | None) -> list[Room]:
         if status is None:
             return self.list_all()

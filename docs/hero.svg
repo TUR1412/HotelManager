@@ -1,0 +1,40 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="HotelManager UI 预览">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0b1019"/>
+      <stop offset="50%" stop-color="#0d1524"/>
+      <stop offset="100%" stop-color="#0b1019"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#7c9dff"/>
+      <stop offset="100%" stop-color="#7ef1d6"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <rect width="1200" height="520" rx="28" fill="url(#bg)"/>
+  <circle cx="160" cy="90" r="120" fill="#7c9dff" opacity="0.16" filter="url(#soft)"/>
+  <circle cx="1040" cy="80" r="140" fill="#7ef1d6" opacity="0.14" filter="url(#soft)"/>
+  <circle cx="980" cy="450" r="160" fill="#ffb86b" opacity="0.12" filter="url(#soft)"/>
+
+  <rect x="80" y="120" width="620" height="140" rx="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+  <rect x="80" y="280" width="260" height="160" rx="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+  <rect x="360" y="280" width="340" height="160" rx="20" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+  <rect x="740" y="180" width="380" height="260" rx="24" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.1)"/>
+
+  <rect x="110" y="150" width="200" height="10" rx="5" fill="url(#accent)"/>
+  <rect x="110" y="175" width="420" height="8" rx="4" fill="rgba(255,255,255,0.18)"/>
+  <rect x="110" y="195" width="360" height="8" rx="4" fill="rgba(255,255,255,0.12)"/>
+
+  <text x="90" y="90" fill="#f5f7ff" font-family="Segoe UI, PingFang SC, sans-serif" font-size="34" font-weight="700">
+    HotelManager
+  </text>
+  <text x="90" y="112" fill="#a7b2cc" font-family="Segoe UI, PingFang SC, sans-serif" font-size="14">
+    世界级酒店运营可视化中枢
+  </text>
+
+  <rect x="770" y="220" width="120" height="12" rx="6" fill="url(#accent)"/>
+  <rect x="770" y="245" width="300" height="10" rx="5" fill="rgba(255,255,255,0.15)"/>
+  <rect x="770" y="270" width="260" height="10" rx="5" fill="rgba(255,255,255,0.12)"/>
+</svg>

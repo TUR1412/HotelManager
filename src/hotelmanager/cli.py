@@ -234,6 +234,42 @@ def cmd_stats_revenue(args: argparse.Namespace) -> int:
         svc.close()
 
 
+def cmd_stats_occupancy(args: argparse.Namespace) -> int:
+    svc = HotelManagerService.open(args.db)
+    try:
+        svc.init_db()
+        start = parse_date(args.start)
+        end = parse_date(args.end)
+        report = svc.get_occupancy_report(start_date=start, end_date=end)
+
+        percent = 0.0 if report.available_room_nights == 0 else report.occupancy_rate * 100
+        if getattr(args, "json", False):
+            _print_json(
+                {
+                    "range": {"start": start.isoformat(), "end": end.isoformat()},
+                    "room_count": report.room_count,
+                    "available_room_nights": report.available_room_nights,
+                    "room_nights": report.room_nights,
+                    "occupancy_rate": report.occupancy_rate,
+                    "occupancy_percent": round(percent, 2),
+                }
+            )
+            return 0
+        _print_table(
+            ["项目", "值"],
+            [
+                ["区间", f"{start.isoformat()}~{end.isoformat()}（闭开 [start, end)）"],
+                ["可售房间数", str(report.room_count)],
+                ["可售房晚", str(report.available_room_nights)],
+                ["已售房晚", str(report.room_nights)],
+                ["入住率", f"{percent:.2f}%"],
+            ],
+        )
+        return 0
+    finally:
+        svc.close()
+
+
 def cmd_room_status(args: argparse.Namespace) -> int:
     svc = HotelManagerService.open(args.db)
     try:
@@ -770,6 +806,11 @@ def build_parser() -> argparse.ArgumentParser:
     p_stats_revenue.add_argument("--start", required=True, help="起始日期 YYYY-MM-DD（含）")
     p_stats_revenue.add_argument("--end", required=True, help="结束日期 YYYY-MM-DD（不含）")
     p_stats_revenue.set_defaults(func=cmd_stats_revenue)
+
+    p_stats_occupancy = stats_sub.add_parser("occupancy", parents=[sub_common], help="入住率统计（按房晚占比）")
+    p_stats_occupancy.add_argument("--start", required=True, help="起始日期 YYYY-MM-DD（含）")
+    p_stats_occupancy.add_argument("--end", required=True, help="结束日期 YYYY-MM-DD（不含）")
+    p_stats_occupancy.set_defaults(func=cmd_stats_occupancy)
 
     # export
     p_export = sub.add_parser("export", help="导出 CSV（默认输出到 stdout）")

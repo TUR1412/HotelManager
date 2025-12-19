@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>HotelManager | 智能酒店管理中枢</title>
+    <link rel="stylesheet" href="assets/styles.css?v=20251219" />
+    <script src="assets/app.js?v=20251219" defer></script>
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <div class="brand-badge" aria-hidden="true">H</div>
+          <div>
+            <div>HotelManager</div>
+            <div class="card-sub">智能中枢 · 房态 / 预订 / 收入</div>
+          </div>
+        </div>
+        <nav class="nav" aria-label="主导航">
+          <a href="#">总览</a>
+          <a href="#">房态</a>
+          <a href="#">预订</a>
+          <a href="#">住客</a>
+          <a href="#">报表</a>
+        </nav>
+        <div class="actions">
+          <button class="btn btn-ghost">同步房态</button>
+          <button class="btn btn-primary js-confetti">生成日报</button>
+        </div>
+      </header>
+
+      <main class="main">
+        <section class="hero">
+          <div class="card hero-card fade-up" style="--delay: 0.05s">
+            <h1>让每一间房都“被看见”</h1>
+            <p>
+              这是一套面向酒店运营的可视化中枢：房态全景、预订节奏、收益脉络与服务节拍统一在同一视图。
+              设计强调“可读性 + 情绪化体验”，确保 3 秒内定位风险与机会。
+            </p>
+            <div class="tag-row">
+              <span class="tag">Bento 结构</span>
+              <span class="tag">玻璃拟态</span>
+              <span class="tag">WCAG AA</span>
+              <span class="tag">本地可运行</span>
+            </div>
+            <div style="margin-top: 18px; display: flex; gap: 12px; flex-wrap: wrap;">
+              <button class="btn btn-primary js-confetti">一键生成运营简报</button>
+              <button class="btn btn-ghost">创建新预订</button>
+              <button class="btn">查看入住流</button>
+            </div>
+          </div>
+          <aside class="card hero-aside fade-up" style="--delay: 0.12s; position: relative;">
+            <div class="confetti-layer" aria-hidden="true"></div>
+            <div>
+              <div class="card-title">今日概览</div>
+              <div class="card-sub">2025-12-19 · 周五</div>
+            </div>
+            <div>
+              <strong style="font-size: 26px;">87%</strong>
+              <div class="card-sub">当前入住率</div>
+              <div class="progress" style="margin-top: 12px;"><span style="width: 87%;"></span></div>
+            </div>
+            <div class="room-item" style="margin-top: 6px;">
+              <div class="room-meta">
+                <strong>今日到店</strong>
+                <span>预计 18:00 之前完成入住</span>
+              </div>
+              <span class="status-pill active">12 组</span>
+            </div>
+            <div class="room-item">
+              <div class="room-meta">
+                <strong>离店提醒</strong>
+                <span>12:00 前完成退房</span>
+              </div>
+              <span class="status-pill alert">4 间</span>
+            </div>
+          </aside>
+        </section>
+
+        <section class="kpi-grid">
+          <div class="card kpi-card fade-up" style="--delay: 0.08s">
+            <div class="card-title">今日入住</div>
+            <div class="kpi-value">36</div>
+            <div class="kpi-trend">▲ +12% · 昨日 32</div>
+          </div>
+          <div class="card kpi-card fade-up" style="--delay: 0.1s">
+            <div class="card-title">在住房间</div>
+            <div class="kpi-value">128</div>
+            <div class="kpi-trend">▲ +4% · 维持高位</div>
+          </div>
+          <div class="card kpi-card fade-up" style="--delay: 0.12s">
+            <div class="card-title">平均房价</div>
+            <div class="kpi-value">¥ 628</div>
+            <div class="kpi-trend">▲ +6% · 7 日均线</div>
+          </div>
+          <div class="card kpi-card fade-up" style="--delay: 0.14s">
+            <div class="card-title">本月收入</div>
+            <div class="kpi-value">¥ 1.42M</div>
+            <div class="kpi-trend">▲ +18% · 目标 120%</div>
+          </div>
+        </section>
+
+        <section class="bento">
+          <div class="card span-6 fade-up" style="--delay: 0.16s">
+            <div class="card-title">收入脉络</div>
+            <div class="card-sub">近 14 日房晚收入趋势</div>
+            <div class="chart" aria-hidden="true">
+              <svg viewBox="0 0 400 220" preserveAspectRatio="none">
+                <defs>
+                  <linearGradient id="line" x1="0" x2="1" y1="0" y2="0">
+                    <stop offset="0%" stop-color="#7c9dff" />
+                    <stop offset="100%" stop-color="#7ef1d6" />
+                  </linearGradient>
+                </defs>
+                <polyline
+                  fill="none"
+                  stroke="url(#line)"
+                  stroke-width="4"
+                  points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80"
+                />
+                <polyline
+                  fill="rgba(124,157,255,0.2)"
+                  stroke="none"
+                  points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80 390,220 10,220"
+                />
+              </svg>
+            </div>
+          </div>
+
+          <div class="card span-6 fade-up" style="--delay: 0.18s">
+            <div class="card-title">房态总览</div>
+            <div class="card-sub">实时可售 / 维修 / 待清洁</div>
+            <ul class="room-list">
+              <li class="room-item">
+                <div class="room-meta">
+                  <strong>可售房</strong>
+                  <span>紧俏 · 预计 18:00 售罄</span>
+                </div>
+                <span class="badge success">58 间</span>
+              </li>
+              <li class="room-item">
+                <div class="room-meta">
+                  <strong>待清洁</strong>
+                  <span>需客房排班支持</span>
+                </div>
+                <span class="badge warn">11 间</span>
+              </li>
+              <li class="room-item">
+                <div class="room-meta">
+                  <strong>维修中</strong>
+                  <span>工程部已排期</span>
+                </div>
+                <span class="badge muted">6 间</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card span-7 fade-up" style="--delay: 0.2s">
+            <div class="card-title">最新预订节拍</div>
+            <div class="card-sub">高价值与风险订单实时跟踪</div>
+            <ul class="booking-list">
+              <li class="booking-item">
+                <div class="booking-meta">
+                  <strong>H-1208 · 套房</strong>
+                  <span>陈晨 · 2 晚 · 12/20 - 12/22</span>
+                </div>
+                <span class="badge success">¥ 2,980</span>
+              </li>
+              <li class="booking-item">
+                <div class="booking-meta">
+                  <strong>D-0615 · 双床</strong>
+                  <span>王祎 · 1 晚 · 12/20 - 12/21</span>
+                </div>
+                <span class="badge warn">待确认</span>
+              </li>
+              <li class="booking-item">
+                <div class="booking-meta">
+                  <strong>S-0912 · 单人</strong>
+                  <span>汪凝 · 3 晚 · 12/21 - 12/24</span>
+                </div>
+                <span class="badge success">¥ 1,680</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card span-5 fade-up" style="--delay: 0.22s">
+            <div class="card-title">运营节奏</div>
+            <div class="timeline">
+              <div class="timeline-item">
+                <time>09:30</time>
+                <div>
+                  <strong>VIP 预抵</strong>
+                  <div class="card-sub">安排迎宾与房间香氛</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <time>11:00</time>
+                <div>
+                  <strong>会议团到店</strong>
+                  <div class="card-sub">需预留 3 间连通房</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <time>17:30</time>
+                <div>
+                  <strong>满房预警</strong>
+                  <div class="card-sub">建议上调当日房价</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span-4 fade-up" style="--delay: 0.24s">
+            <div class="card-title">住客洞察</div>
+            <div class="card-sub">口碑与评分趋势</div>
+            <div style="margin-top: 14px; display: grid; gap: 12px;">
+              <div class="room-item">
+                <div class="room-meta">
+                  <strong>NPS 评分</strong>
+                  <span>近 30 日</span>
+                </div>
+                <span class="badge success">+62</span>
+              </div>
+              <div class="room-item">
+                <div class="room-meta">
+                  <strong>重复入住率</strong>
+                  <span>会员贡献占比</span>
+                </div>
+                <span class="badge success">38%</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card span-4 fade-up" style="--delay: 0.26s">
+            <div class="card-title">空状态设计</div>
+            <div class="card-sub">暂无差评 · 继续保持</div>
+            <div class="empty-illustration" aria-hidden="true">
+              <svg viewBox="0 0 120 120">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+                    <stop offset="0%" stop-color="#7c9dff" />
+                    <stop offset="100%" stop-color="#7ef1d6" />
+                  </linearGradient>
+                </defs>
+                <rect x="24" y="30" width="72" height="64" rx="18" fill="url(#g1)" opacity="0.9" />
+                <rect x="34" y="44" width="52" height="36" rx="12" fill="#0b1019" opacity="0.35" />
+                <rect x="44" y="54" width="12" height="10" rx="3" fill="#fff" opacity="0.7" />
+                <rect x="64" y="54" width="12" height="10" rx="3" fill="#fff" opacity="0.7" />
+              </svg>
+            </div>
+            <div class="card-sub" style="margin-top: 12px;">今日无新增投诉，建议维持服务节奏。</div>
+          </div>
+
+          <div class="card span-4 fade-up" style="--delay: 0.28s">
+            <div class="card-title">AI 建议</div>
+            <div class="card-sub">基于入住趋势自动生成</div>
+            <ul class="room-list" style="margin-top: 12px;">
+              <li class="room-item">
+                <div class="room-meta">
+                  <strong>周末拉新礼包</strong>
+                  <span>预计转化 +14%</span>
+                </div>
+                <span class="badge success">推荐</span>
+              </li>
+              <li class="room-item">
+                <div class="room-meta">
+                  <strong>商务房加价</strong>
+                  <span>满房预期提升</span>
+                </div>
+                <span class="badge warn">待确认</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="card span-6 fade-up" style="--delay: 0.3s">
+            <div class="card-title">批量导入预订</div>
+            <div class="card-sub">拖拽 CSV / Excel 进行快速同步</div>
+            <div class="dropzone" data-default="拖拽文件到这里，或点击上传" data-active="松开即可导入" role="button" tabindex="0">
+              拖拽文件到这里，或点击上传
+            </div>
+            <div class="card-sub" style="margin-top: 10px;">支持 rooms / guests / bookings 批量导入。</div>
+          </div>
+
+          <div class="card span-6 fade-up" style="--delay: 0.32s">
+            <div class="card-title">服务执行清单</div>
+            <div class="card-sub">跨部门协同与执行追踪</div>
+            <div class="timeline" style="margin-top: 12px;">
+              <div class="timeline-item">
+                <time>客房</time>
+                <div>
+                  <strong>清洁进度</strong>
+                  <div class="card-sub">已完成 78% · 预计 14:30 全部完成</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <time>前台</time>
+                <div>
+                  <strong>入住办理</strong>
+                  <div class="card-sub">等候时长 4 分钟（优秀）</div>
+                </div>
+              </div>
+              <div class="timeline-item">
+                <time>工程</time>
+                <div>
+                  <strong>维修巡检</strong>
+                  <div class="card-sub">今日剩余 2 间客房未检</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
