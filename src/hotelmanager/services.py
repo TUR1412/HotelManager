@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import date, datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
 
+from . import __version__
 from . import db as db_module
 from .domain import Booking, BookingView, Guest, HotelStats, Room
 from .errors import BookingConflictError, DatabaseError, NotFoundError, ValidationError
@@ -35,6 +36,9 @@ class OccupancyReport:
     room_nights: int
     available_room_nights: int
     occupancy_rate: float
+
+
+SNAPSHOT_SCHEMA_VERSION = 1
 
 
 def now_utc() -> datetime:
@@ -82,6 +86,12 @@ def parse_money_to_cents(value: str) -> int:
 def format_cents(cents: int) -> str:
     d = Decimal(cents) / Decimal(100)
     return f"{d:.2f}"
+
+
+def format_utc_z(dt: datetime) -> str:
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
 
 
 def _ensure_non_empty(value: str, field_name: str) -> str:
@@ -191,9 +201,7 @@ class HotelManagerService:
         days = (end_date - start_date).days
         room_count = RoomRepository(self.conn).count_active()
         available_room_nights = room_count * days
-        _, room_nights, _ = BookingRepository(self.conn).get_revenue_for_range(
-            start=start_date, end=end_date
-        )
+        _, room_nights, _ = BookingRepository(self.conn).get_revenue_for_range(start=start_date, end=end_date)
         occupancy_rate = 0.0 if available_room_nights == 0 else room_nights / available_room_nights
         return OccupancyReport(
             room_count=room_count,
@@ -201,6 +209,62 @@ class HotelManagerService:
             available_room_nights=available_room_nights,
             occupancy_rate=occupancy_rate,
         )
+
+    def export_snapshot(self) -> dict[str, object]:
+        stats = self.get_stats()
+        rooms = self.list_rooms()
+        guests = self.list_guests()
+        bookings = self.list_booking_views()
+
+        return {
+            "schema_version": SNAPSHOT_SCHEMA_VERSION,
+            "app_version": __version__,
+            "generated_at": format_utc_z(now_utc()),
+            "stats": {
+                "room_count": stats.room_count,
+                "guest_count": stats.guest_count,
+                "booking_count": stats.booking_count,
+                "reserved_booking_count": stats.reserved_booking_count,
+            },
+            "rooms": [
+                {
+                    "id": r.id,
+                    "number": r.number,
+                    "room_type": r.room_type,
+                    "capacity": r.capacity,
+                    "price_per_night_cents": r.price_per_night_cents,
+                    "status": r.status,
+                }
+                for r in rooms
+            ],
+            "guests": [
+                {
+                    "id": g.id,
+                    "full_name": g.full_name,
+                    "email": g.email,
+                    "phone": g.phone,
+                    "created_at": format_utc_z(g.created_at),
+                }
+                for g in guests
+            ],
+            "bookings": [
+                {
+                    "id": b.id,
+                    "room_number": b.room_number,
+                    "room_type": b.room_type,
+                    "guest_name": b.guest_name,
+                    "guest_email": b.guest_email,
+                    "start_date": b.start_date.isoformat(),
+                    "end_date": b.end_date.isoformat(),
+                    "nights": (b.end_date - b.start_date).days,
+                    "price_per_night_cents": b.price_per_night_cents,
+                    "total_cents": b.price_per_night_cents * (b.end_date - b.start_date).days,
+                    "status": b.status,
+                    "created_at": format_utc_z(b.created_at),
+                }
+                for b in bookings
+            ],
+        }
 
     # Rooms
     def add_room(
