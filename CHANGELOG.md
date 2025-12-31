@@ -6,6 +6,17 @@
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-12-31
+
+升级与扩展：
+
+- Export：新增 JSON 快照导出（`export snapshot`），包含 stats/rooms/guests/bookings（schema_version=1，金额 cents、时间 ISO 8601）
+- Web UI：支持导入快照（拖拽/点击/键盘），并自动刷新 KPI 与最新预订列表，提供成功/失败提示
+- CLI：重构为模块化命令结构（入口更薄、可维护性更强）
+- 安全：SQL 片段受控化（where builder + 危险 token 拦截）与 PRAGMA 表名白名单校验
+- 工程化：固定 ruff 版本，避免 CI 静态检查漂移
+- 文档：补充 CLI/架构/UI 文档与快照说明
+
 ## [0.4.0] - 2025-12-19
 
 升级与扩展：
