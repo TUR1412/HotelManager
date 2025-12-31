@@ -53,6 +53,17 @@ body::before {
   z-index: 0;
 }
 
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e8ecff;
+  white-space: nowrap;
+}
+
 .app {
   position: relative;
   z-index: 1;
@@ -390,13 +401,42 @@ body::before {
   text-align: center;
   color: var(--muted);
   background: rgba(124, 157, 255, 0.08);
+  cursor: pointer;
+  user-select: none;
   transition: all 0.2s ease;
+}
+
+.dropzone:focus-visible {
+  outline: 2px solid rgba(126, 241, 214, 0.9);
+  outline-offset: 4px;
 }
 
 .dropzone.is-dragging {
   border-color: rgba(126, 241, 214, 0.9);
   background: rgba(126, 241, 214, 0.12);
   color: #d6fff3;
+}
+
+.dropzone.is-success {
+  border-color: rgba(110, 231, 183, 0.9);
+  background: rgba(110, 231, 183, 0.12);
+  color: #d6fff3;
+}
+
+.dropzone.is-error {
+  border-color: rgba(255, 107, 107, 0.85);
+  background: rgba(255, 107, 107, 0.08);
+  color: #ffd2d2;
+}
+
+.import-status {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted-2);
+}
+
+.import-status strong {
+  color: var(--text);
 }
 
 .empty-illustration {

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="dark" />
     <title>HotelManager | 智能酒店管理中枢</title>
-    <link rel="stylesheet" href="assets/styles.css?v=20251219" />
-    <script src="assets/app.js?v=20251219" defer></script>
+    <link rel="stylesheet" href="assets/styles.css?v=20251231" />
+    <script src="assets/app.js?v=20251231" defer></script>
   </head>
   <body>
     <div class="app">
@@ -26,8 +26,8 @@
           <a href="#">报表</a>
         </nav>
         <div class="actions">
-          <button class="btn btn-ghost">同步房态</button>
-          <button class="btn btn-primary js-confetti">生成日报</button>
+          <button class="btn btn-ghost js-import" type="button">导入快照</button>
+          <button class="btn btn-primary js-confetti" type="button">生成日报</button>
         </div>
       </header>
 
@@ -81,24 +81,24 @@
 
         <section class="kpi-grid">
           <div class="card kpi-card fade-up" style="--delay: 0.08s">
-            <div class="card-title">今日入住</div>
-            <div class="kpi-value">36</div>
-            <div class="kpi-trend">▲ +12% · 昨日 32</div>
+            <div class="card-title">房间数</div>
+            <div class="kpi-value" data-kpi="room_count">--</div>
+            <div class="kpi-trend" data-kpi-hint>导入快照后自动刷新</div>
           </div>
           <div class="card kpi-card fade-up" style="--delay: 0.1s">
-            <div class="card-title">在住房间</div>
-            <div class="kpi-value">128</div>
-            <div class="kpi-trend">▲ +4% · 维持高位</div>
+            <div class="card-title">住客数</div>
+            <div class="kpi-value" data-kpi="guest_count">--</div>
+            <div class="kpi-trend" data-kpi-hint>导入快照后自动刷新</div>
           </div>
           <div class="card kpi-card fade-up" style="--delay: 0.12s">
-            <div class="card-title">平均房价</div>
-            <div class="kpi-value">¥ 628</div>
-            <div class="kpi-trend">▲ +6% · 7 日均线</div>
+            <div class="card-title">预订总数</div>
+            <div class="kpi-value" data-kpi="booking_count">--</div>
+            <div class="kpi-trend" data-kpi-hint>含已取消预订</div>
           </div>
           <div class="card kpi-card fade-up" style="--delay: 0.14s">
-            <div class="card-title">本月收入</div>
-            <div class="kpi-value">¥ 1.42M</div>
-            <div class="kpi-trend">▲ +18% · 目标 120%</div>
+            <div class="card-title">有效预订</div>
+            <div class="kpi-value" data-kpi="reserved_booking_count">--</div>
+            <div class="kpi-trend" data-kpi-hint>reserved 状态</div>
           </div>
         </section>
 
@@ -159,28 +159,14 @@
 
           <div class="card span-7 fade-up" style="--delay: 0.2s">
             <div class="card-title">最新预订节拍</div>
-            <div class="card-sub">高价值与风险订单实时跟踪</div>
-            <ul class="booking-list">
+            <div class="card-sub">导入快照后展示最近的 reserved 预订（最多 3 条）</div>
+            <ul class="booking-list" data-booking-list="latest">
               <li class="booking-item">
                 <div class="booking-meta">
-                  <strong>H-1208 · 套房</strong>
-                  <span>陈晨 · 2 晚 · 12/20 - 12/22</span>
+                  <strong>尚未导入快照</strong>
+                  <span>请在下方“导入数据快照”区域拖拽 snapshot.json</span>
                 </div>
-                <span class="badge success">¥ 2,980</span>
-              </li>
-              <li class="booking-item">
-                <div class="booking-meta">
-                  <strong>D-0615 · 双床</strong>
-                  <span>王祎 · 1 晚 · 12/20 - 12/21</span>
-                </div>
-                <span class="badge warn">待确认</span>
-              </li>
-              <li class="booking-item">
-                <div class="booking-meta">
-                  <strong>S-0912 · 单人</strong>
-                  <span>汪凝 · 3 晚 · 12/21 - 12/24</span>
-                </div>
-                <span class="badge success">¥ 1,680</span>
+                <span class="badge muted">等待导入</span>
               </li>
             </ul>
           </div>
@@ -275,12 +261,23 @@
           </div>
 
           <div class="card span-6 fade-up" style="--delay: 0.3s">
-            <div class="card-title">批量导入预订</div>
-            <div class="card-sub">拖拽 CSV / Excel 进行快速同步</div>
-            <div class="dropzone" data-default="拖拽文件到这里，或点击上传" data-active="松开即可导入" role="button" tabindex="0">
-              拖拽文件到这里，或点击上传
+            <div class="card-title">导入数据快照</div>
+            <div class="card-sub">拖拽 CLI 导出的 snapshot.json（本地解析，不联网）</div>
+            <div
+              class="dropzone"
+              data-default="拖拽 snapshot.json 到这里，或点击上传"
+              data-active="松开即可导入快照"
+              role="button"
+              tabindex="0"
+              aria-label="导入数据快照"
+            >
+              拖拽 snapshot.json 到这里，或点击上传
             </div>
-            <div class="card-sub" style="margin-top: 10px;">支持 rooms / guests / bookings 批量导入。</div>
+            <input class="file-input" type="file" accept="application/json,.json" hidden />
+            <div class="import-status" data-import-status role="status" aria-live="polite">未导入快照</div>
+            <div class="card-sub" style="margin-top: 10px;">
+              导出命令：<code>python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json --pretty</code>
+            </div>
           </div>
 
           <div class="card span-6 fade-up" style="--delay: 0.32s">
