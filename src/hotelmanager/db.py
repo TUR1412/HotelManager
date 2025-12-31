@@ -55,6 +55,8 @@ CURRENT_SCHEMA_VERSION = 2
 
 TransactionMode = Literal["DEFERRED", "IMMEDIATE"]
 
+_KNOWN_TABLES = {"rooms", "guests", "bookings"}
+
 
 @contextmanager
 def transaction(conn: sqlite3.Connection, *, mode: TransactionMode = "DEFERRED") -> Iterator[None]:
@@ -93,8 +95,15 @@ def _set_user_version(conn: sqlite3.Connection, version: int) -> None:
     conn.execute(f"PRAGMA user_version = {int(version)};")
 
 
+def _ensure_known_table(table: str) -> str:
+    if table not in _KNOWN_TABLES:
+        raise DatabaseError(f"非法或未知的数据表名：{table!r}")
+    return table
+
+
 def _table_has_column(conn: sqlite3.Connection, table: str, column: str) -> bool:
-    rows = conn.execute(f"PRAGMA table_info({table});").fetchall()
+    table = _ensure_known_table(table)
+    rows = conn.execute(f'PRAGMA table_info("{table}");').fetchall()
     return any(str(r["name"]) == column for r in rows)
 
 
@@ -173,10 +182,11 @@ def _validate_schema(conn: sqlite3.Connection) -> None:
     }
 
     for table, required in required_columns.items():
+        table = _ensure_known_table(table)
         if not _table_exists(conn, table):
             raise DatabaseError(f"数据库缺少必要的数据表：{table}。请先运行 `init` 或删除损坏的 db 文件。")
 
-        rows = conn.execute(f"PRAGMA table_info({table});").fetchall()
+        rows = conn.execute(f'PRAGMA table_info("{table}");').fetchall()
         columns = {str(r["name"]) for r in rows}
         missing = sorted(required - columns)
         if missing:

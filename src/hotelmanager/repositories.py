@@ -4,6 +4,7 @@ import sqlite3
 from datetime import date, datetime, timezone
 
 from .domain import Booking, BookingView, Guest, Room
+from .sql import build_and_conditions, build_where_clause
 
 
 def _parse_iso_datetime(value: str) -> datetime:
@@ -139,7 +140,7 @@ class RoomRepository:
             conditions.append("lower(room_type) = lower(?)")
             params.append(room_type)
 
-        where_clause = "" if not conditions else "WHERE " + " AND ".join(conditions)
+        where_clause = build_where_clause(conditions)
         rows = self._conn.execute(
             f"""
             SELECT id, number, room_type, capacity, price_per_night_cents, status
@@ -194,7 +195,7 @@ class RoomRepository:
         )
         params.extend([start.isoformat(), end.isoformat()])
 
-        where_clause = " AND ".join(c.strip() for c in conditions)
+        where_clause = build_and_conditions(conditions)
         rows = self._conn.execute(
             f"""
             SELECT r.id, r.number, r.room_type, r.capacity, r.price_per_night_cents, r.status
@@ -353,7 +354,7 @@ class BookingRepository:
             conditions.append("id != ?")
             params.append(exclude_booking_id)
 
-        where_clause = " AND ".join(conditions)
+        where_clause = build_and_conditions(conditions)
         row = self._conn.execute(
             f"""
             SELECT 1
@@ -565,7 +566,7 @@ class BookingRepository:
             params.append(overlap_start.isoformat())
             params.append(overlap_end.isoformat())
 
-        where_clause = "" if not conditions else "WHERE " + " AND ".join(conditions)
+        where_clause = build_where_clause(conditions)
         query = f"""
             SELECT
                 b.id AS id,
