@@ -21,6 +21,21 @@
 - **微交互**：按钮 hover 上浮、active 缩放
 - **多巴胺反馈**：操作按钮触发 confetti + shimmer
 
+## 数据联通（CLI → Web UI）
+
+本 UI 仍保持“纯静态可打开”，但支持导入 CLI 导出的 **JSON 快照**，让页面从“样机”升级为“离线可视化面板”：
+
+1. 导出快照：
+   ```bash
+   python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json --pretty
+   ```
+2. 打开 `web/index.html`
+3. 点击右上角“导入快照”或拖拽 `snapshot.json` 到导入区域
+
+说明：
+- 导入逻辑仅在浏览器本地解析文件，不会发起网络请求
+- 目前前端校验 `schema_version=1`（不匹配会提示错误）
+
 ## 组件预览
 
 - 运营概览（Hero + 今日概览）

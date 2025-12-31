@@ -171,7 +171,18 @@ python -m hotelmanager stats occupancy --start 2025-12-20 --end 2025-12-30 --db 
 导出 CSV（默认输出到 stdout，可用 `--out` 写文件）：
 
 ```bash
-python -m hotelmanager export rooms --db hotelmanager.db --out rooms.csv
-python -m hotelmanager export guests --db hotelmanager.db --out guests.csv
-python -m hotelmanager export bookings --db hotelmanager.db --out bookings.csv
+python -m hotelmanager export rooms --db hotelmanager.db --out rooms.csv        
+python -m hotelmanager export guests --db hotelmanager.db --out guests.csv      
+python -m hotelmanager export bookings --db hotelmanager.db --out bookings.csv  
 ```
+
+导出 JSON 快照（用于 Web UI 导入，推荐加 `--pretty` 便于排查）：
+
+```bash
+python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json --pretty
+```
+
+快照内容包含：
+- `stats`（room/guest/booking 计数）
+- `rooms` / `guests` / `bookings`（列表数据）
+- `schema_version`（用于前端校验兼容性）

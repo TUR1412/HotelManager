@@ -60,18 +60,30 @@
   - 入住率统计（已售房晚 / 可售房晚）
 - 导出（Export）
   - 导出 rooms/guests/bookings 为 CSV
+  - 导出 snapshot JSON（用于 Web UI 导入）
   - 列表/报表支持 `--json` 输出
 
 ---
 
 ## Web UI（静态管理台）
 
-> UI 为静态预览，不依赖后端服务；设计目标是建立“世界级视觉与交互基线”。
+> UI 为静态页面，可直接打开；设计目标是建立“世界级视觉与交互基线”。同时支持导入 CLI 导出的 JSON 快照，让页面展示真实数据（本地解析，不联网）。
 
 ### 本地预览
 
 1. 直接打开 `web/index.html`
 2. CSS 在 `web/assets/styles.css`，JS 在 `web/assets/app.js`
+
+### 数据导入（CLI → Web UI）
+
+1. 导出快照（推荐加 `--pretty` 便于排查）：
+
+```bash
+python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json --pretty
+```
+
+2. 打开 `web/index.html`
+3. 点击右上角“导入快照”，或拖拽 `snapshot.json` 到页面导入区域
 
 ### 设计亮点
 
@@ -169,9 +181,16 @@ pwsh -NoLogo -NoProfile -File .\scripts\check.ps1
 
 ## 设计与架构
 
-设计与分层结构说明见：`docs/ARCHITECTURE.md`  
-CLI 参数说明见：`docs/CLI.md`  
-数据库与迁移策略见：`docs/DB.md`  
+```mermaid
+flowchart LR
+  CLI[CLI] --> DB[(SQLite)]
+  CLI -->|export snapshot| JSON[snapshot.json]
+  JSON --> WebUI[Web UI Import]
+```
+
+设计与分层结构说明见：`docs/ARCHITECTURE.md`
+CLI 参数说明见：`docs/CLI.md`
+数据库与迁移策略见：`docs/DB.md`
 常见问题见：`docs/FAQ.md`
 
 ---

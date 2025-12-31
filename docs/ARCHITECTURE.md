@@ -6,18 +6,21 @@
 
 项目采用轻量分层（不引入框架）：
 
-- **CLI 层**：`src/hotelmanager/cli.py`
-  - 负责解析参数、组织输出、将用户输入转为领域可用的数据类型（如日期/金额）。
+- **CLI 层**：
+  - 入口：`src/hotelmanager/cli.py`（薄入口：组装 parser + 统一错误处理）
+  - 命令模块：`src/hotelmanager/cli_cmd_*.py`（按业务域拆分，便于演进与维护）
+  - 通用输出/解析工具：`src/hotelmanager/cli_support.py`
   - 不直接写 SQL，不直接拼接数据库逻辑。
 - **Web UI（静态预览）**：`web/`
   - 以静态页面形式提供管理台体验基线，强调视觉与交互规范。
-  - 不依赖后端服务，便于设计评审与演进。
+  - 不依赖后端服务；支持导入 CLI 导出的 JSON 快照（本地解析）以展示真实数据。
 - **应用服务层**：`src/hotelmanager/services.py`
   - 承载业务规则：校验、预订冲突检测、状态约束等。
   - 对外提供“可组合”的方法（例如 `create_booking`、`set_room_status`、`list_booking_views_filtered`）。
 - **仓储层**：`src/hotelmanager/repositories.py`
   - 封装 SQL 与对象映射（Row -> dataclass）。
   - 不包含业务规则（例如：不在仓储层判断房间状态）。
+  - 受控 SQL 片段构建工具见：`src/hotelmanager/sql.py`
 - **DB/Schema 层**：`src/hotelmanager/db.py`
   - SQLite 连接、Schema 初始化（`init_db`）。
 
@@ -67,7 +70,9 @@
 
 ## 6. Web UI（静态管理台）
 
-UI 位于 `web/`，为静态预览页面，不依赖后端服务。  
+UI 位于 `web/`，为静态页面，可直接打开预览。
+
+同时支持导入由 CLI 导出的 JSON 快照（`export snapshot`），让页面展示真实数据（KPI 计数、最新预订列表等），且全程本地解析、不触发网络请求。
 设计原则与组件说明见：`docs/UI.md`。
 
 本地运行：
