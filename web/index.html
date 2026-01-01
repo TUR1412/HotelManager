@@ -3,12 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="color-scheme" content="dark" />
+    <meta name="color-scheme" content="dark light" />
     <title>HotelManager | 智能酒店管理中枢</title>
-    <link rel="stylesheet" href="assets/styles.css?v=20251231" />
-    <script src="assets/app.js?v=20251231" defer></script>
+    <link rel="stylesheet" href="assets/styles.css?v=20260101" />
+    <script src="assets/app.js?v=20260101" defer></script>
   </head>
   <body>
+    <a class="skip-link" href="#main">跳到主内容</a>
     <div class="app">
       <header class="topbar">
         <div class="brand">
@@ -19,20 +20,23 @@
           </div>
         </div>
         <nav class="nav" aria-label="主导航">
-          <a href="#">总览</a>
-          <a href="#">房态</a>
-          <a href="#">预订</a>
-          <a href="#">住客</a>
-          <a href="#">报表</a>
+          <a href="#overview">总览</a>
+          <a href="#rooms">房态</a>
+          <a href="#bookings">预订</a>
+          <a href="#guests">住客</a>
+          <a href="#reports">报表</a>
         </nav>
         <div class="actions">
           <button class="btn btn-ghost js-import" type="button">导入快照</button>
-          <button class="btn btn-primary js-confetti" type="button">生成日报</button>
+          <button class="btn btn-ghost js-theme" type="button" aria-label="切换主题" aria-pressed="false">
+            主题
+          </button>
+          <button class="btn btn-primary js-confetti js-report" type="button">生成日报</button>
         </div>
       </header>
 
-      <main class="main">
-        <section class="hero">
+      <main class="main" id="main">
+        <section class="hero" id="overview">
           <div class="card hero-card fade-up" style="--delay: 0.05s">
             <h1>让每一间房都“被看见”</h1>
             <p>
@@ -55,26 +59,26 @@
             <div class="confetti-layer" aria-hidden="true"></div>
             <div>
               <div class="card-title">今日概览</div>
-              <div class="card-sub">2025-12-19 · 周五</div>
+              <div class="card-sub" data-today-label>--</div>
             </div>
             <div>
-              <strong style="font-size: 26px;">87%</strong>
+              <strong style="font-size: 26px;" data-occupancy-rate>--%</strong>
               <div class="card-sub">当前入住率</div>
-              <div class="progress" style="margin-top: 12px;"><span style="width: 87%;"></span></div>
+              <div class="progress" style="margin-top: 12px;"><span data-occupancy-bar style="width: 0%;"></span></div>
             </div>
             <div class="room-item" style="margin-top: 6px;">
               <div class="room-meta">
                 <strong>今日到店</strong>
                 <span>预计 18:00 之前完成入住</span>
               </div>
-              <span class="status-pill active">12 组</span>
+              <span class="status-pill active" data-arrivals>--</span>
             </div>
             <div class="room-item">
               <div class="room-meta">
                 <strong>离店提醒</strong>
                 <span>12:00 前完成退房</span>
               </div>
-              <span class="status-pill alert">4 间</span>
+              <span class="status-pill alert" data-departures>--</span>
             </div>
           </aside>
         </section>
@@ -103,10 +107,10 @@
         </section>
 
         <section class="bento">
-          <div class="card span-6 fade-up" style="--delay: 0.16s">
+          <div class="card span-6 fade-up" style="--delay: 0.16s" id="reports">
             <div class="card-title">收入脉络</div>
             <div class="card-sub">近 14 日房晚收入趋势</div>
-            <div class="chart" aria-hidden="true">
+            <div class="chart" aria-hidden="true" data-chart="revenue">
               <svg viewBox="0 0 400 220" preserveAspectRatio="none">
                 <defs>
                   <linearGradient id="line" x1="0" x2="1" y1="0" y2="0">
@@ -119,45 +123,47 @@
                   stroke="url(#line)"
                   stroke-width="4"
                   points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80"
+                  data-chart-line="revenue"
                 />
                 <polyline
                   fill="rgba(124,157,255,0.2)"
                   stroke="none"
                   points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80 390,220 10,220"
+                  data-chart-fill="revenue"
                 />
               </svg>
             </div>
           </div>
 
-          <div class="card span-6 fade-up" style="--delay: 0.18s">
+          <div class="card span-6 fade-up" style="--delay: 0.18s" id="rooms">
             <div class="card-title">房态总览</div>
-            <div class="card-sub">实时可售 / 维修 / 待清洁</div>
+            <div class="card-sub">可售 / 在住 / 维修（导入快照后自动刷新）</div>
             <ul class="room-list">
               <li class="room-item">
                 <div class="room-meta">
                   <strong>可售房</strong>
                   <span>紧俏 · 预计 18:00 售罄</span>
                 </div>
-                <span class="badge success">58 间</span>
+                <span class="badge success" data-room-summary="available">--</span>
               </li>
               <li class="room-item">
                 <div class="room-meta">
-                  <strong>待清洁</strong>
-                  <span>需客房排班支持</span>
+                  <strong>在住房</strong>
+                  <span>含今日已入住</span>
                 </div>
-                <span class="badge warn">11 间</span>
+                <span class="badge warn" data-room-summary="occupied">--</span>
               </li>
               <li class="room-item">
                 <div class="room-meta">
                   <strong>维修中</strong>
                   <span>工程部已排期</span>
                 </div>
-                <span class="badge muted">6 间</span>
+                <span class="badge muted" data-room-summary="maintenance">--</span>
               </li>
             </ul>
           </div>
 
-          <div class="card span-7 fade-up" style="--delay: 0.2s">
+          <div class="card span-7 fade-up" style="--delay: 0.2s" id="bookings">
             <div class="card-title">最新预订节拍</div>
             <div class="card-sub">导入快照后展示最近的 reserved 预订（最多 3 条）</div>
             <ul class="booking-list" data-booking-list="latest">
@@ -198,7 +204,7 @@
             </div>
           </div>
 
-          <div class="card span-4 fade-up" style="--delay: 0.24s">
+          <div class="card span-4 fade-up" style="--delay: 0.24s" id="guests">
             <div class="card-title">住客洞察</div>
             <div class="card-sub">口碑与评分趋势</div>
             <div style="margin-top: 14px; display: grid; gap: 12px;">
@@ -310,5 +316,6 @@
         </section>
       </main>
     </div>
+    <div class="toast-stack" data-toast-stack aria-live="polite" aria-relevant="additions"></div>
   </body>
 </html>

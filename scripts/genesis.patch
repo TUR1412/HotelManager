@@ -1,0 +1,1194 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index b37e07d..477c7be 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -6,6 +6,9 @@
+ 
+ ## [Unreleased]
+ 
++- Web UI锛氭柊澧炴繁/娴呰壊涓婚鍒囨崲锛涘鍏ュ揩鐓у悗鍒锋柊鍏ヤ綇鐜?鍒板簵/绂诲簵/鎴挎€佷笌鏀跺叆鏇茬嚎锛涙敮鎸佷竴閿鍑?Markdown 鏃ユ姤涓?toast 鎻愮ず銆佸揩鎹烽敭銆?+- 鏂囨。锛歊EADME 涓?UI 鏂囨。鍚屾鍗囩骇锛岃ˉ鍏呬富棰?鏃ユ姤/鏁版嵁椹卞姩璇存槑銆?+
+ ## [0.5.0] - 2025-12-31
+ 
+ 鍗囩骇涓庢墿灞曪細
+diff --git a/README.md b/README.md
+index 1f054fb..baada04 100644
+--- a/README.md
++++ b/README.md
+@@ -1,3 +1,12 @@
++```text
++ _   _       _       _ __  __                                   
++| | | | ___ | |_ ___| |  \/  | __ _ _ __   __ _  __ _  ___ _ __ 
++| |_| |/ _ \| __/ _ \ | |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
++|  _  | (_) | ||  __/ | |  | | (_| | | | | (_| | (_| |  __/ |   
++|_| |_|\___/ \__\___|_|_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|   
++                                                |___/           
++```
++
+ # HotelManager
+ 
+ <p align="center">
+@@ -7,6 +16,8 @@
+ ![CI](https://github.com/TUR1412/HotelManager/actions/workflows/ci.yml/badge.svg)
+ ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
+ ![SQLite](https://img.shields.io/badge/SQLite-Local%20First-003B57)
++![Ruff](https://img.shields.io/badge/Ruff-0.14.10-261230)
++![WebUI](https://img.shields.io/badge/WebUI-Static%20Dashboard-7c9dff)
+ 
+ 涓€涓交閲忋€佸彲鎵╁睍鐨勯厭搴楃鐞嗗紩鎿庯細**CLI + SQLite + 鍙鍖栭潤鎬?UI**銆? 
+ 寮鸿皟鈥?*鍙繍琛屻€佸彲娴嬭瘯銆佸彲鎵╁睍銆佸彲瀹¤**鈥濓紝骞剁敤涓栫晫绾?UI 瑙勮寖瀹氫箟绠＄悊鍙颁綋楠屽熀绾裤€?@@ -31,12 +42,12 @@
+ 
+ ## 鏍稿績浜偣
+ 
+-- **闆惰繍琛屾椂渚濊禆**锛氫粎 Python 鏍囧噯搴擄紙`sqlite3` + `argparse`锛?-- **棰嗗煙灞傜ǔ鍥?*锛欳LI / 鏈嶅姟灞?/ 浠撳偍灞?/ Schema 鍒嗙
+-- **涓氬姟瑙勫垯鍙獙璇?*锛氶璁㈠啿绐佹娴嬶紙闂紑鍖洪棿 `[start, end)`锛?-- **鍘嗗彶閲戦蹇収**锛氭埧浠疯皟鏁翠笉褰卞搷宸插垱寤洪璁?-- **缁熻鍗囩骇**锛氭敹鍏ョ粺璁?+ 鍏ヤ綇鐜囩粺璁★紙鎸夊凡鍞埧鏅氬崰姣旓級
+-- **UI 浣撻獙鍩虹嚎**锛欱ento Grid / 鐜荤拑鎷熸€?/ 寰姩鏁?/ 楂樺彲璇绘€?+- 馃殌 **闆惰繍琛屾椂渚濊禆**锛氫粎 Python 鏍囧噯搴擄紙`sqlite3` + `argparse`锛?+- 馃П **棰嗗煙灞傜ǔ鍥?*锛欳LI / 鏈嶅姟灞?/ 浠撳偍灞?/ Schema 鍒嗙
++- 馃洝锔?**涓氬姟瑙勫垯鍙獙璇?*锛氶璁㈠啿绐佹娴嬶紙闂紑鍖洪棿 `[start, end)`锛?+- 馃捑 **鍘嗗彶閲戦蹇収**锛氭埧浠疯皟鏁翠笉褰卞搷宸插垱寤洪璁?+- 馃搱 **缁熻鍗囩骇**锛氭敹鍏ョ粺璁?+ 鍏ヤ綇鐜囩粺璁★紙鎸夊凡鍞埧鏅氬崰姣旓級
++- 鉁?**UI 浣撻獙鍩虹嚎**锛欱ento Grid / 鐜荤拑鎷熸€?/ 寰姩鏁?/ 楂樺彲璇绘€?/ 涓婚鍒囨崲 / 鏃ユ姤瀵煎嚭
+ 
+ ---
+ 
+@@ -89,8 +100,10 @@ python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json
+ 
+ - **Bento Grid**锛氫俊鎭ā鍧楀寲銆佸眰绾ф槑纭? - **鐜荤拑鎷熸€?*锛氬崱鐗囧眰娆′笌绌洪棿鎰?-- **鍔ㄦ晥缂栨帓**锛氫氦閿欏叆鍦?+ 寰氦浜?+ Confetti
++- **鍔ㄦ晥缂栨帓**锛氫氦閿欏叆鍦?+ 寰氦浜?+ Confetti + Toast
+ - **楂樺彲璇绘€?*锛氬姣斿害婊¤冻 WCAG AA
++- **鏁版嵁椹卞姩**锛氬叆浣忕巼 / 鍒板簵 / 绂诲簵 / 鎴挎€佷笌鏀跺叆鏇茬嚎鍩轰簬蹇収瀹炴椂璁＄畻
++- **绂荤嚎鏃ユ姤**锛氫竴閿鍑?Markdown 鏃ユ姤锛堥€傚悎鐣欐。/鍚屾锛? 
+ 璇︾粏璇存槑瑙侊細`docs/UI.md`銆? 
+@@ -186,6 +199,7 @@ flowchart LR
+   CLI[CLI] --> DB[(SQLite)]
+   CLI -->|export snapshot| JSON[snapshot.json]
+   JSON --> WebUI[Web UI Import]
++  WebUI -->|export daily report| MD[daily_report.md]
+ ```
+ 
+ 璁捐涓庡垎灞傜粨鏋勮鏄庤锛歚docs/ARCHITECTURE.md`
+diff --git a/docs/UI.md b/docs/UI.md
+index a6f6799..dcefb27 100644
+--- a/docs/UI.md
++++ b/docs/UI.md
+@@ -19,7 +19,15 @@
+ 
+ - **鍏ュ満绀间华**锛氬尯鍧楅噰鐢?`fade-up` 浜ら敊鍏ュ満
+ - **寰氦浜?*锛氭寜閽?hover 涓婃诞銆乤ctive 缂╂斁
+-- **澶氬反鑳哄弽棣?*锛氭搷浣滄寜閽Е鍙?confetti + shimmer
++- **澶氬反鑳哄弽棣?*锛氭搷浣滄寜閽Е鍙?confetti + shimmer + toast
++- **涓婚鍒囨崲**锛氭敮鎸佹繁鑹?娴呰壊涓€閿垏鎹紙璁板繂鐢ㄦ埛鍋忓ソ锛屽苟灏婇噸绯荤粺鍋忓ソ锛?+- **蹇嵎閿?*锛歚I` 瀵煎叆蹇収 / `G` 鐢熸垚鏃ユ姤 / `T` 鍒囨崲涓婚
++
++## 涓婚绯荤粺
++
++- **娣辫壊 / 娴呰壊**锛氶€氳繃 CSS 鍙橀噺涓?`data-theme` 鎺у埗瑙嗚鍩哄簳銆?+- **榛樿绛栫暐**锛氫紭鍏堣鍙栨湰鍦板亸濂斤紙`localStorage`锛夛紝鍚﹀垯璺熼殢绯荤粺鍋忓ソ銆?+- **鐩爣**锛氫笉渚濊禆浠讳綍妗嗘灦涓庢瀯寤哄伐鍏凤紝淇濇寔鈥滃崟鏂囦欢鍙墦寮€鈥濄€? 
+ ## 鏁版嵁鑱旈€氾紙CLI 鈫?Web UI锛? 
+@@ -36,6 +44,15 @@
+ - 瀵煎叆閫昏緫浠呭湪娴忚鍣ㄦ湰鍦拌В鏋愭枃浠讹紝涓嶄細鍙戣捣缃戠粶璇锋眰
+ - 鐩墠鍓嶇鏍￠獙 `schema_version=1`锛堜笉鍖归厤浼氭彁绀洪敊璇級
+ 
++瀵煎叆鎴愬姛鍚庯紝椤甸潰浼氬熀浜庡揩鐓у疄鏃惰绠楀苟鍒锋柊锛?+- KPI 鍗＄墖
++- 鏈€鏂伴璁㈠垪琛紙reserved锛屾渶澶?3 鏉★級
++- 浠婃棩姒傝锛堝叆浣忕巼 / 浠婃棩鍒板簵 / 浠婃棩绂诲簵锛?+- 鎴挎€佹€昏锛堝彲鍞?/ 鍦ㄤ綇 / 缁翠慨锛?+- 鏀跺叆鏇茬嚎锛堣繎 14 鏃ユ埧鏅氭敹鍏ワ紝鎸?`price_per_night_cents` 鑱氬悎锛?+
++鍚屾椂鏀寔涓€閿敓鎴愬苟瀵煎嚭 **Markdown 鏃ユ姤**锛堟湰鍦扮敓鎴愶紝涓嶈仈缃戯級銆?+
+ ## 缁勪欢棰勮
+ 
+ - 杩愯惀姒傝锛圚ero + 浠婃棩姒傝锛?diff --git a/helloagents/CHANGELOG.md b/helloagents/CHANGELOG.md
+index 67e497b..3cd2722 100644
+--- a/helloagents/CHANGELOG.md
++++ b/helloagents/CHANGELOG.md
+@@ -5,6 +5,11 @@
+ 
+ ## [Unreleased]
+ 
++### 鏂板
++- Web UI锛氭繁/娴呰壊涓婚鍒囨崲锛堣蹇嗗亸濂斤級锛屽苟鏂板蹇嵎閿紙`I` 瀵煎叆蹇収 / `G` 鐢熸垚鏃ユ姤 / `T` 鍒囨崲涓婚锛夈€?+- Web UI锛氬鍏ュ揩鐓у悗锛屽熀浜庢暟鎹疄鏃惰绠楀叆浣忕巼銆佸埌搴?绂诲簵銆佹埧鎬佹€昏涓庢敹鍏ユ洸绾裤€?+- Web UI锛氭敮鎸佷竴閿鍑?Markdown 鏃ユ姤锛屽苟閫氳繃 toast 鎻愮ず鍙嶉瀵煎叆/瀵煎嚭鐘舵€併€?+
+ ## [0.5.0] - 2025-12-31
+ 
+ ### 鏂板
+diff --git a/helloagents/wiki/modules/web-ui.md b/helloagents/wiki/modules/web-ui.md
+index 62ef5c0..896ef64 100644
+--- a/helloagents/wiki/modules/web-ui.md
++++ b/helloagents/wiki/modules/web-ui.md
+@@ -5,11 +5,15 @@
+ 
+ ## 妯″潡姒傝堪
+ - **鑱岃矗:** 瑙嗚绯荤粺锛圖esign Tokens锛? 淇℃伅鏋舵瀯锛圛A锛? 浜や簰锛圡icro-interactions锛? 蹇収瀵煎叆
+-- **鐘舵€?** 馃毀寮€鍙戜腑
+-- **鏈€鍚庢洿鏂?** 2025-12-31
++- **鐘舵€?** 鉁呭彲鐢紙鎸佺画杩唬锛?+- **鏈€鍚庢洿鏂?** 2026-01-01
++
++## 鏈€杩戝彉鏇达紙鎽樿锛?+- 鏂板娣?娴呰壊涓婚鍒囨崲锛堣蹇嗗亸濂斤級銆?+- 蹇収瀵煎叆鍚庤绠楀苟鍒锋柊锛氬叆浣忕巼銆佸埌搴?绂诲簵銆佹埧鎬佹€昏銆佹敹鍏ユ洸绾裤€?+- 鏀寔涓€閿鍑?Markdown 鏃ユ姤锛屽苟鎻愪緵 toast 鐘舵€佸弽棣堜笌蹇嵎閿€? 
+ ## 瑙勮寖
+ - 涓嶅紩鍏ュ墠绔鏋朵笌杩愯鏃朵緷璧栵紱淇濇寔绾潤鎬佸彲鎵撳紑銆? - 瀵煎叆閫昏緫浠呭湪鏈湴瑙ｆ瀽鏂囦欢锛屼笉瑙﹀彂缃戠粶璇锋眰銆? - 淇濊瘉鍙闂€э細璇箟缁撴瀯銆侀敭鐩樺彲鐢ㄣ€佺劍鐐瑰彲瑙併€佸姣斿害婊¤冻 WCAG AA銆?-
+diff --git a/web/README.md b/web/README.md
+index b412910..8717541 100644
+--- a/web/README.md
++++ b/web/README.md
+@@ -10,6 +10,12 @@
+ 2. CSS锛歚web/assets/styles.css`
+ 3. JS锛歚web/assets/app.js`
+ 
++## 浜や簰閫熸煡
++
++- 涓婚鍒囨崲锛氬彸涓婅銆屼富棰樸€嶆寜閽紝涓€閿垏鎹㈡繁鑹?娴呰壊锛堜細璁板繂鍋忓ソ锛夈€?+- 鏃ユ姤瀵煎嚭锛氬彸涓婅銆岀敓鎴愭棩鎶ャ€嶏紝瀵煎嚭 Markdown 鏃ユ姤锛堟湰鍦扮敓鎴愶紝涓嶈仈缃戯級銆?+- 閿洏蹇嵎閿細`I` 瀵煎叆蹇収 / `G` 鐢熸垚鏃ユ姤 / `T` 鍒囨崲涓婚
++
+ ## 瀵煎叆鏁版嵁蹇収锛堟帹鑽愶級
+ 
+ 1. 鐢熸垚蹇収锛?@@ -22,6 +28,7 @@ python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json
+ 3. 鐐瑰嚮鍙充笂瑙掆€滃鍏ュ揩鐓р€濓紝鎴栨嫋鎷?`snapshot.json` 鍒伴〉闈㈠鍏ュ尯鍩? 
+ > 鍓嶇浼氭牎楠?`schema_version`锛涚洰鍓嶅吋瀹?`schema_version=1`銆?+> 瀵煎叆鎴愬姛鍚庝細鍒锋柊 KPI銆佹渶鏂伴璁€佸叆浣忕巼/鍒板簵/绂诲簵銆佹埧鎬佹€昏涓庢敹鍏ユ洸绾裤€? 
+ ## 璁捐鍏抽敭璇? 
+diff --git a/web/assets/app.js b/web/assets/app.js
+index deffd2b..18ad941 100644
+--- a/web/assets/app.js
++++ b/web/assets/app.js
+@@ -1,4 +1,431 @@
+ (() => {
++  const qs = (selector, root = document) => root.querySelector(selector);
++  const qsa = (selector, root = document) => Array.from(root.querySelectorAll(selector));
++  const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
++
++  const formatCny = (cents) => {
++    const n = Number(cents);
++    if (!Number.isFinite(n)) return "--";
++    return `楼 ${new Intl.NumberFormat("zh-CN", {
++      minimumFractionDigits: 2,
++      maximumFractionDigits: 2,
++    }).format(n / 100)}`;
++  };
++
++  const formatYmd = (d) => {
++    const year = d.getFullYear();
++    const month = String(d.getMonth() + 1).padStart(2, "0");
++    const day = String(d.getDate()).padStart(2, "0");
++    return `${year}-${month}-${day}`;
++  };
++
++  const formatWeekdayZh = (d) => new Intl.DateTimeFormat("zh-CN", { weekday: "short" }).format(d);
++
++  const toastStack = qs("[data-toast-stack]");
++  const pushToast = ({ kind = "info", title = "鎻愮ず", message = "", timeoutMs = 3200 } = {}) => {
++    if (!toastStack) return;
++
++    const toast = document.createElement("div");
++    toast.className = `toast is-${kind}`;
++
++    const titleRow = document.createElement("div");
++    titleRow.className = "toast-title";
++
++    const titleEl = document.createElement("div");
++    titleEl.textContent = title;
++
++    const closeBtn = document.createElement("button");
++    closeBtn.type = "button";
++    closeBtn.setAttribute("aria-label", "鍏抽棴");
++    closeBtn.textContent = "脳";
++
++    titleRow.appendChild(titleEl);
++    titleRow.appendChild(closeBtn);
++
++    const msgEl = document.createElement("div");
++    msgEl.className = "toast-msg";
++    msgEl.textContent = message;
++
++    toast.appendChild(titleRow);
++    toast.appendChild(msgEl);
++
++    const close = () => {
++      if (toast.classList.contains("is-leaving")) return;
++      toast.classList.add("is-leaving");
++      window.setTimeout(() => toast.remove(), 260);
++    };
++
++    closeBtn.addEventListener("click", close);
++    window.setTimeout(() => close(), clamp(timeoutMs, 1200, 10000));
++
++    toastStack.appendChild(toast);
++  };
++
++  const THEME_KEY = "hotelmanager_theme";
++  const getSystemTheme = () => {
++    const mq = window.matchMedia?.("(prefers-color-scheme: light)");
++    return mq && mq.matches ? "light" : "dark";
++  };
++
++  const applyTheme = (theme) => {
++    const normalized = theme === "light" ? "light" : "dark";
++    document.documentElement.dataset.theme = normalized;
++
++    const themeBtn = qs(".js-theme");
++    if (themeBtn) {
++      themeBtn.setAttribute("aria-pressed", normalized === "light" ? "true" : "false");
++      themeBtn.textContent = normalized === "light" ? "娴呰壊" : "娣辫壊";
++    }
++  };
++
++  const toggleTheme = () => {
++    const current = document.documentElement.dataset.theme === "light" ? "light" : "dark";
++    const next = current === "light" ? "dark" : "light";
++    applyTheme(next);
++    try {
++      localStorage.setItem(THEME_KEY, next);
++    } catch {
++      // ignore
++    }
++    pushToast({
++      kind: "info",
++      title: "涓婚宸插垏鎹?,
++      message: next === "light" ? "宸插垏鎹负娴呰壊妯″紡" : "宸插垏鎹负娣辫壊妯″紡",
++      timeoutMs: 2200,
++    });
++  };
++
++  applyTheme((() => {
++    try {
++      return localStorage.getItem(THEME_KEY) || getSystemTheme();
++    } catch {
++      return getSystemTheme();
++    }
++  })());
++
++  qs(".js-theme")?.addEventListener("click", toggleTheme);
++
++  const renderToday = () => {
++    const now = new Date();
++    const label = `${formatYmd(now)} 路 ${formatWeekdayZh(now)}`;
++    const el = qs("[data-today-label]");
++    if (el) el.textContent = label;
++  };
++  renderToday();
++
++  const syncNavActive = () => {
++    const hash = window.location.hash || "#overview";
++    qsa(".nav a").forEach((a) => {
++      a.classList.toggle("is-active", a.getAttribute("href") === hash);
++    });
++  };
++
++  syncNavActive();
++  window.addEventListener("hashchange", syncNavActive);
++  qsa(".nav a").forEach((a) => a.addEventListener("click", () => window.setTimeout(syncNavActive, 0)));
++
++  let currentSnapshot = null;
++  let openImportPicker = null;
++
++  const animateNumber = (
++    el,
++    { from, to, durationMs = 650, formatter = (v) => String(Math.round(v)) } = {},
++  ) => {
++    if (!el || !Number.isFinite(from) || !Number.isFinite(to)) {
++      return;
++    }
++
++    const startedAt = performance.now();
++    const delta = to - from;
++
++    const tick = (now) => {
++      const t = clamp((now - startedAt) / durationMs, 0, 1);
++      const eased = 1 - (1 - t) ** 3;
++      el.textContent = formatter(from + delta * eased);
++      if (t < 1) window.requestAnimationFrame(tick);
++    };
++
++    window.requestAnimationFrame(tick);
++  };
++
++  const pickLatestReservedBookings = (bookings, limit = 3) => {
++    const all = Array.isArray(bookings) ? bookings : [];
++    const top = [];
++
++    const keyOf = (b) => String(b?.created_at || b?.start_date || "");
++
++    for (const b of all) {
++      if (!b || b.status !== "reserved") continue;
++      const key = keyOf(b);
++      if (!key) continue;
++
++      let inserted = false;
++      for (let i = 0; i < top.length; i += 1) {
++        if (key > keyOf(top[i])) {
++          top.splice(i, 0, b);
++          inserted = true;
++          break;
++        }
++      }
++      if (!inserted) top.push(b);
++      if (top.length > limit) top.length = limit;
++    }
++
++    return top;
++  };
++
++  const computeOpsMetrics = (snapshot, todayStr) => {
++    const rooms = Array.isArray(snapshot?.rooms) ? snapshot.rooms : [];
++    const bookings = Array.isArray(snapshot?.bookings) ? snapshot.bookings : [];
++
++    const activeRooms = rooms.filter((r) => r && r.status === "active").length;
++    const maintenanceRooms = rooms.filter((r) => r && r.status === "maintenance").length;
++
++    const statsRoomCount = Number(snapshot?.stats?.room_count);
++    const roomDenom = activeRooms || (Number.isFinite(statsRoomCount) ? statsRoomCount : 0);
++
++    const reserved = bookings.filter((b) => b && b.status === "reserved");
++
++    const occupiedSet = new Set();
++    for (const b of reserved) {
++      const start = String(b.start_date || "");
++      const end = String(b.end_date || "");
++      const roomNumber = b.room_number;
++      if (!start || !end || !roomNumber) continue;
++      if (start <= todayStr && todayStr < end) {
++        occupiedSet.add(String(roomNumber));
++      }
++    }
++
++    const occupied = occupiedSet.size;
++    const available = roomDenom ? Math.max(0, roomDenom - occupied) : 0;
++
++    const arrivals = reserved.filter((b) => String(b.start_date || "") === todayStr).length;
++    const departures = reserved.filter((b) => String(b.end_date || "") === todayStr).length;
++
++    const occupancyRate = roomDenom ? occupied / roomDenom : 0;
++
++    return {
++      roomDenom,
++      activeRooms,
++      maintenanceRooms,
++      occupied,
++      available,
++      arrivals,
++      departures,
++      occupancyRate,
++    };
++  };
++
++  const computeRevenueSeries = (snapshot, days) => {
++    const values = new Array(days.length).fill(0);
++    const bookings = Array.isArray(snapshot?.bookings) ? snapshot.bookings : [];
++
++    for (const b of bookings) {
++      if (!b || b.status !== "reserved") continue;
++      const start = String(b.start_date || "");
++      const end = String(b.end_date || "");
++      const price = Number(b.price_per_night_cents);
++      if (!start || !end || !Number.isFinite(price)) continue;
++
++      for (let i = 0; i < days.length; i += 1) {
++        const day = days[i];
++        if (start <= day && day < end) {
++          values[i] += price;
++        }
++      }
++    }
++
++    return values;
++  };
++
++  const applyOpsSummary = (snapshot) => {
++    const todayStr = formatYmd(new Date());
++    const metrics = computeOpsMetrics(snapshot, todayStr);
++    const percent = Math.round(metrics.occupancyRate * 100);
++
++    const occRateEl = qs("[data-occupancy-rate]");
++    if (occRateEl) {
++      const prev = Number.parseInt(String(occRateEl.textContent || "").replace(/[^\d]/g, ""), 10);
++      if (Number.isFinite(prev)) {
++        animateNumber(occRateEl, { from: prev, to: percent, formatter: (v) => `${Math.round(v)}%` });
++      } else {
++        occRateEl.textContent = `${percent}%`;
++      }
++    }
++
++    const occBarEl = qs("[data-occupancy-bar]");
++    if (occBarEl) {
++      occBarEl.style.width = `${clamp(percent, 0, 100)}%`;
++    }
++
++    const arrivalsEl = qs("[data-arrivals]");
++    if (arrivalsEl) arrivalsEl.textContent = `${metrics.arrivals} 缁刞;
++
++    const departuresEl = qs("[data-departures]");
++    if (departuresEl) departuresEl.textContent = `${metrics.departures} 闂碻;
++
++    qsa("[data-room-summary]").forEach((el) => {
++      const key = el.dataset.roomSummary;
++      if (key === "available") el.textContent = `${metrics.available} 闂碻;
++      if (key === "occupied") el.textContent = `${metrics.occupied} 闂碻;
++      if (key === "maintenance") el.textContent = `${metrics.maintenanceRooms} 闂碻;
++    });
++
++    return metrics;
++  };
++
++  const applyRevenueChart = (snapshot) => {
++    const line = qs('[data-chart-line="revenue"]');
++    const fill = qs('[data-chart-fill="revenue"]');
++    if (!line || !fill) return;
++
++    const days = [];
++    for (let offset = 13; offset >= 0; offset -= 1) {
++      const d = new Date();
++      d.setDate(d.getDate() - offset);
++      days.push(formatYmd(d));
++    }
++
++    const values = computeRevenueSeries(snapshot, days);
++    const max = Math.max(...values, 1);
++
++    const left = 10;
++    const right = 390;
++    const top = 40;
++    const bottom = 190;
++    const step = (right - left) / Math.max(1, values.length - 1);
++
++    const points = values
++      .map((v, i) => {
++        const x = left + step * i;
++        const y = bottom - (v / max) * (bottom - top);
++        return `${x.toFixed(2)},${y.toFixed(2)}`;
++      })
++      .join(" ");
++
++    line.setAttribute("points", points);
++    fill.setAttribute("points", `${points} ${right},220 ${left},220`);
++  };
++
++  const downloadTextFile = (filename, content, mime = "text/plain;charset=utf-8") => {
++    const blob = new Blob([content], { type: mime });
++    const url = URL.createObjectURL(blob);
++    const a = document.createElement("a");
++    a.href = url;
++    a.download = filename;
++    a.rel = "noopener";
++    document.body.appendChild(a);
++    a.click();
++    a.remove();
++    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
++  };
++
++  const generateDailyReportMarkdown = (snapshot) => {
++    const now = new Date();
++    const todayStr = formatYmd(now);
++    const metrics = computeOpsMetrics(snapshot, todayStr);
++    const stats = snapshot?.stats || {};
++
++    const appVersion = snapshot?.app_version ? `v${snapshot.app_version}` : "鈥?;
++    const generatedAt = snapshot?.generated_at || "鈥?;
++
++    const latest = pickLatestReservedBookings(snapshot?.bookings, 3);
++
++    const lines = [];
++    lines.push(`# HotelManager 杩愯惀鏃ユ姤锛?{todayStr}锛塦);
++    lines.push("");
++    lines.push(`- 蹇収鐗堟湰: ${appVersion}`);
++    lines.push(`- 鐢熸垚鏃堕棿: ${generatedAt}`);
++    lines.push("");
++    lines.push("## 鏍稿績鎸囨爣");
++    lines.push(`- 鎴块棿鏁? ${stats.room_count ?? "--"}锛坅ctive=${metrics.activeRooms}锛宮aintenance=${metrics.maintenanceRooms}锛塦);
++    lines.push(`- 浣忓鏁? ${stats.guest_count ?? "--"}`);
++    lines.push(`- 棰勮鎬绘暟: ${stats.booking_count ?? "--"}锛坮eserved=${stats.reserved_booking_count ?? "--"}锛塦);
++    lines.push("");
++    lines.push("## 浠婃棩杩愯惀");
++    lines.push(`- 鍏ヤ綇鐜? ${Math.round(metrics.occupancyRate * 100)}%锛?{metrics.occupied}/${metrics.roomDenom || 0}锛塦);
++    lines.push(`- 浠婃棩鍒板簵: ${metrics.arrivals}`);
++    lines.push(`- 浠婃棩绂诲簵: ${metrics.departures}`);
++    lines.push("");
++    lines.push("## 鏈€鏂伴璁紙reserved锛?);
++    if (!latest.length) {
++      lines.push("- 锛堟棤锛?);
++    } else {
++      latest.forEach((b) => {
++        const title = `${b.room_number || "--"} 路 ${b.room_type || "--"}`;
++        const range = `${b.start_date || "--"} - ${b.end_date || "--"}`;
++        const name = b.guest_name || b.guest_email || "--";
++        const amount = typeof b.total_cents === "number" ? formatCny(b.total_cents) : "鈥?;
++        lines.push(`- ${title} | ${name} | ${range} | ${amount}`);
++      });
++    }
++    lines.push("");
++    lines.push("> 璇存槑锛氳鏃ユ姤鐢遍潤鎬?Web UI 鍦ㄦ湰鍦扮敓鎴愶紝涓嶈仈缃戙€?);
++    lines.push("");
++
++    return lines.join("\n");
++  };
++
++  const reportBtn = qs(".js-report");
++  reportBtn?.addEventListener("click", async () => {
++    if (!currentSnapshot) {
++      pushToast({
++        kind: "info",
++        title: "灏氭湭瀵煎叆蹇収",
++        message: "璇峰厛瀵煎叆 snapshot.json锛屽鍏ュ悗鍙敓鎴愬苟瀵煎嚭鏃ユ姤銆?,
++      });
++      qs(".dropzone")?.scrollIntoView({ behavior: "smooth", block: "center" });
++      return;
++    }
++
++    const md = generateDailyReportMarkdown(currentSnapshot);
++    const filename = `hotelmanager_daily_report_${formatYmd(new Date())}.md`;
++    downloadTextFile(filename, md, "text/markdown;charset=utf-8");
++
++    let copied = false;
++    try {
++      await navigator.clipboard.writeText(md);
++      copied = true;
++    } catch {
++      // ignore (file:// may not allow clipboard)
++    }
++
++    pushToast({
++      kind: "success",
++      title: "鏃ユ姤宸茬敓鎴?,
++      message: copied ? `宸蹭笅杞藉苟澶嶅埗鍒板壀璐存澘锛?{filename}` : `宸蹭笅杞斤細${filename}`,
++    });
++  });
++
++  document.addEventListener("keydown", (event) => {
++    if (event.defaultPrevented) return;
++    if (event.ctrlKey || event.metaKey || event.altKey) return;
++
++    const target = event.target;
++    if (
++      target instanceof HTMLElement &&
++      (target.isContentEditable || ["input", "textarea", "select"].includes(target.tagName.toLowerCase()))
++    ) {
++      return;
++    }
++
++    const key = String(event.key || "").toLowerCase();
++    if (key === "i") {
++      if (openImportPicker) {
++        openImportPicker();
++      } else {
++        pushToast({ kind: "info", title: "瀵煎叆蹇収", message: "鏈娴嬪埌瀵煎叆鍖哄煙锛坉ropzone锛夈€? });
++      }
++    }
++    if (key === "t") {
++      toggleTheme();
++    }
++    if (key === "g") {
++      reportBtn?.click();
++    }
++  });
++
+   const palette = ["#7c9dff", "#7ef1d6", "#ffb86b", "#ffffff"];
+ 
+   const spawnConfetti = (anchor) => {
+@@ -35,6 +462,8 @@
+     const statusEl = importCard.querySelector("[data-import-status]");
+     const importButtons = document.querySelectorAll(".js-import");
+ 
++    openImportPicker = () => fileInput?.click();
++
+     const setStatus = (kind, message) => {
+       if (statusEl) {
+         statusEl.textContent = message;
+@@ -48,15 +477,6 @@
+       dropzone.textContent = active ? activeText : defaultText;
+     };
+ 
+-    const formatCny = (cents) => {
+-      const n = Number(cents);
+-      if (!Number.isFinite(n)) return "--";
+-      return `楼 ${new Intl.NumberFormat("zh-CN", {
+-        minimumFractionDigits: 2,
+-        maximumFractionDigits: 2,
+-      }).format(n / 100)}`;
+-    };
+-
+     const validateSnapshot = (data) => {
+       if (!data || typeof data !== "object") {
+         throw new Error("鏂囦欢涓嶆槸鏈夋晥鐨?JSON 瀵硅薄");
+@@ -89,6 +509,8 @@
+     };
+ 
+     const applySnapshot = (snapshot) => {
++      currentSnapshot = snapshot;
++
+       const stats = snapshot.stats || {};
+       const kpiMap = {
+         room_count: stats.room_count,
+@@ -101,16 +523,22 @@
+         const key = el.dataset.kpi;
+         if (!key) return;
+         const value = kpiMap[key];
+-        el.textContent = typeof value === "number" ? String(value) : "--";
++        if (typeof value !== "number") {
++          el.textContent = "--";
++          return;
++        }
++        const prev = Number.parseInt(String(el.textContent || ""), 10);
++        if (Number.isFinite(prev)) {
++          animateNumber(el, { from: prev, to: value });
++        } else {
++          el.textContent = String(value);
++        }
+       });
+ 
+       const list = document.querySelector('[data-booking-list="latest"]');
+       if (list) {
+         const all = Array.isArray(snapshot.bookings) ? snapshot.bookings : [];
+-        const latest = all
+-          .filter((b) => b && b.status === "reserved")
+-          .sort((a, b) => String(b.created_at || "").localeCompare(String(a.created_at || "")))
+-          .slice(0, 3);
++        const latest = pickLatestReservedBookings(all, 3);
+ 
+         list.innerHTML = "";
+         if (!latest.length) {
+@@ -152,6 +580,9 @@
+         }
+       }
+ 
++      applyOpsSummary(snapshot);
++      applyRevenueChart(snapshot);
++
+       const meta = [
+         snapshot.app_version ? `v${snapshot.app_version}` : null,
+         snapshot.generated_at ? `鐢熸垚鏃堕棿 ${snapshot.generated_at}` : null,
+@@ -159,6 +590,12 @@
+         .filter(Boolean)
+         .join(" 路 ");
+       setStatus("success", meta ? `宸插鍏ュ揩鐓э紙${meta}锛塦 : "宸插鍏ュ揩鐓?);
++      pushToast({
++        kind: "success",
++        title: "蹇収宸插鍏?,
++        message: meta ? `宸插鍏ワ紙${meta}锛塦 : "宸插鍏ュ揩鐓?,
++        timeoutMs: 3600,
++      });
+ 
+       spawnConfetti(importCard);
+     };
+@@ -178,10 +615,12 @@
+         } catch (err) {
+           const msg = err instanceof Error ? err.message : "瀵煎叆澶辫触锛氭湭鐭ラ敊璇?;
+           setStatus("error", `瀵煎叆澶辫触锛?{msg}`);
++          pushToast({ kind: "error", title: "瀵煎叆澶辫触", message: msg, timeoutMs: 5200 });
+         }
+       };
+       reader.onerror = () => {
+         setStatus("error", "瀵煎叆澶辫触锛氭棤娉曡鍙栨枃浠?);
++        pushToast({ kind: "error", title: "瀵煎叆澶辫触", message: "鏃犳硶璇诲彇鏂囦欢", timeoutMs: 5200 });
+       };
+       reader.readAsText(file);
+     };
+@@ -208,13 +647,13 @@
+     });
+ 
+     dropzone.addEventListener("click", () => {
+-      fileInput?.click();
++      openImportPicker?.();
+     });
+ 
+     dropzone.addEventListener("keydown", (event) => {
+       if (event.key === "Enter" || event.key === " ") {
+         event.preventDefault();
+-        fileInput?.click();
++        openImportPicker?.();
+       }
+     });
+ 
+@@ -226,7 +665,7 @@
+ 
+     importButtons.forEach((btn) => {
+       btn.addEventListener("click", () => {
+-        fileInput?.click();
++        openImportPicker?.();
+       });
+     });
+   }
+diff --git a/web/assets/styles.css b/web/assets/styles.css
+index d1cde7b..4325215 100644
+--- a/web/assets/styles.css
++++ b/web/assets/styles.css
+@@ -1,5 +1,5 @@
+ :root {
+-  color-scheme: dark;
++  color-scheme: dark light;
+   --bg: #0b1019;
+   --bg-2: #0f1623;
+   --card: rgba(18, 24, 36, 0.72);
+@@ -14,6 +14,13 @@
+   --danger: #ff6b6b;
+   --success: #6ee7b7;
+   --shadow: 0 24px 60px rgba(8, 12, 20, 0.45);
++  --surface: rgba(255, 255, 255, 0.04);
++  --surface-border: rgba(255, 255, 255, 0.06);
++  --surface-border-strong: rgba(255, 255, 255, 0.12);
++  --code-bg: rgba(255, 255, 255, 0.06);
++  --code-border: rgba(255, 255, 255, 0.08);
++  --btn-bg: rgba(255, 255, 255, 0.08);
++  --focus: rgba(126, 241, 214, 0.9);
+   --radius-lg: 20px;
+   --radius-md: 14px;
+   --radius-sm: 10px;
+@@ -24,6 +31,24 @@
+   --font: "Inter", "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+ }
+ 
++:root[data-theme="light"] {
++  --bg: #f4f7ff;
++  --bg-2: #edf2ff;
++  --card: rgba(255, 255, 255, 0.76);
++  --card-strong: rgba(255, 255, 255, 0.88);
++  --card-border: rgba(10, 16, 25, 0.1);
++  --text: #0b1019;
++  --muted: rgba(11, 16, 25, 0.66);
++  --muted-2: rgba(11, 16, 25, 0.52);
++  --shadow: 0 24px 60px rgba(8, 12, 20, 0.14);
++  --surface: rgba(15, 22, 35, 0.04);
++  --surface-border: rgba(15, 22, 35, 0.08);
++  --surface-border-strong: rgba(15, 22, 35, 0.14);
++  --code-bg: rgba(15, 22, 35, 0.06);
++  --code-border: rgba(15, 22, 35, 0.14);
++  --btn-bg: rgba(15, 22, 35, 0.06);
++}
++
+ * {
+   box-sizing: border-box;
+ }
+@@ -36,12 +61,25 @@ body {
+     radial-gradient(1200px 820px at 12% 8%, rgba(124, 157, 255, 0.18), transparent 45%),
+     radial-gradient(900px 680px at 90% 0%, rgba(126, 241, 214, 0.12), transparent 45%),
+     radial-gradient(700px 520px at 80% 85%, rgba(255, 184, 107, 0.1), transparent 55%),
+-    linear-gradient(180deg, #0b1019 0%, #0c1320 45%, #0b1019 100%);
++    linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 45%, var(--bg) 100%);
+   min-height: 100vh;
+   position: relative;
+   overflow-x: hidden;
+ }
+ 
++:root[data-theme="light"] body::before {
++  opacity: 0.06;
++  mix-blend-mode: multiply;
++}
++
++html {
++  scroll-behavior: smooth;
++}
++
++:where(section, .card)[id] {
++  scroll-margin-top: 120px;
++}
++
+ body::before {
+   content: "";
+   position: fixed;
+@@ -58,12 +96,36 @@ code {
+   font-size: 12px;
+   padding: 2px 6px;
+   border-radius: 8px;
+-  border: 1px solid rgba(255, 255, 255, 0.08);
+-  background: rgba(255, 255, 255, 0.06);
++  border: 1px solid var(--code-border);
++  background: var(--code-bg);
+   color: #e8ecff;
+   white-space: nowrap;
+ }
+ 
++:root[data-theme="light"] code {
++  color: rgba(11, 16, 25, 0.92);
++}
++
++.skip-link {
++  position: fixed;
++  left: 16px;
++  top: 16px;
++  padding: 10px 14px;
++  border-radius: 12px;
++  background: var(--card-strong);
++  border: 1px solid var(--card-border);
++  color: var(--text);
++  text-decoration: none;
++  box-shadow: var(--shadow);
++  transform: translateY(-140%);
++  transition: transform 0.2s ease;
++  z-index: 9999;
++}
++
++.skip-link:focus {
++  transform: translateY(0);
++}
++
+ .app {
+   position: relative;
+   z-index: 1;
+@@ -122,14 +184,26 @@ code {
+   background: rgba(124, 157, 255, 0.14);
+ }
+ 
++.nav a:focus-visible {
++  outline: 2px solid var(--focus);
++  outline-offset: 3px;
++}
++
++.nav a.is-active {
++  color: var(--text);
++  background: rgba(124, 157, 255, 0.14);
++  border: 1px solid rgba(124, 157, 255, 0.25);
++}
++
+ .actions {
+   display: flex;
+   gap: 12px;
++  flex-wrap: wrap;
+ }
+ 
+ .btn {
+   border: 1px solid transparent;
+-  background: rgba(255, 255, 255, 0.08);
++  background: var(--btn-bg);
+   color: var(--text);
+   padding: 10px 16px;
+   border-radius: 12px;
+@@ -152,6 +226,11 @@ code {
+   transform: scale(0.97);
+ }
+ 
++.btn:focus-visible {
++  outline: 2px solid var(--focus);
++  outline-offset: 4px;
++}
++
+ .btn-primary {
+   background: linear-gradient(135deg, rgba(124, 157, 255, 0.95), rgba(126, 241, 214, 0.95));
+   color: #0b1019;
+@@ -159,7 +238,7 @@ code {
+ 
+ .btn-ghost {
+   background: transparent;
+-  border: 1px solid rgba(255, 255, 255, 0.12);
++  border: 1px solid var(--surface-border-strong);
+ }
+ 
+ .main {
+@@ -196,6 +275,14 @@ code {
+   padding: 22px;
+   backdrop-filter: blur(18px);
+   box-shadow: var(--shadow);
++  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
++}
++
++@media (hover: hover) and (pointer: fine) {
++  .card:hover {
++    transform: translateY(-2px);
++    border-color: rgba(124, 157, 255, 0.2);
++  }
+ }
+ 
+ .card strong {
+@@ -316,7 +403,7 @@ code {
+   width: 100%;
+   height: 10px;
+   border-radius: 999px;
+-  background: rgba(255, 255, 255, 0.12);
++  background: var(--surface-border-strong);
+   overflow: hidden;
+ }
+ 
+@@ -325,6 +412,7 @@ code {
+   height: 100%;
+   width: 72%;
+   background: linear-gradient(90deg, rgba(124, 157, 255, 0.95), rgba(126, 241, 214, 0.95));
++  transition: width 0.6s ease;
+ }
+ 
+ .room-list,
+@@ -344,8 +432,18 @@ code {
+   justify-content: space-between;
+   padding: 12px 14px;
+   border-radius: var(--radius-md);
+-  background: rgba(255, 255, 255, 0.04);
+-  border: 1px solid rgba(255, 255, 255, 0.06);
++  background: var(--surface);
++  border: 1px solid var(--surface-border);
++  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
++}
++
++@media (hover: hover) and (pointer: fine) {
++  .room-item:hover,
++  .booking-item:hover {
++    transform: translateY(-1px);
++    border-color: rgba(124, 157, 255, 0.22);
++    background: rgba(124, 157, 255, 0.08);
++  }
+ }
+ 
+ .room-meta,
+@@ -366,7 +464,7 @@ code {
+   border-radius: 999px;
+   font-size: 12px;
+   color: var(--text);
+-  border: 1px solid rgba(255, 255, 255, 0.12);
++  border: 1px solid var(--surface-border-strong);
+ }
+ 
+ .badge.success { border-color: rgba(126, 241, 214, 0.6); color: #b8ffe8; }
+@@ -385,8 +483,8 @@ code {
+   align-items: start;
+   padding: 12px 14px;
+   border-radius: var(--radius-md);
+-  background: rgba(255, 255, 255, 0.04);
+-  border: 1px solid rgba(255, 255, 255, 0.06);
++  background: var(--surface);
++  border: 1px solid var(--surface-border);
+ }
+ 
+ .timeline-item time {
+@@ -407,7 +505,7 @@ code {
+ }
+ 
+ .dropzone:focus-visible {
+-  outline: 2px solid rgba(126, 241, 214, 0.9);
++  outline: 2px solid var(--focus);
+   outline-offset: 4px;
+ }
+ 
+@@ -516,6 +614,80 @@ code {
+   border: 0;
+ }
+ 
++.toast-stack {
++  position: fixed;
++  right: 16px;
++  bottom: 16px;
++  display: grid;
++  gap: 10px;
++  width: min(360px, calc(100vw - 32px));
++  z-index: 9998;
++  pointer-events: none;
++}
++
++.toast {
++  pointer-events: auto;
++  background: var(--card-strong);
++  border: 1px solid var(--card-border);
++  border-radius: 14px;
++  padding: 12px 14px;
++  box-shadow: var(--shadow);
++  display: grid;
++  gap: 4px;
++  animation: toast-in 0.28s ease-out both;
++}
++
++.toast.is-leaving {
++  animation: toast-out 0.24s ease-in both;
++}
++
++.toast-title {
++  display: flex;
++  align-items: center;
++  justify-content: space-between;
++  font-weight: 700;
++  font-size: 13px;
++}
++
++.toast-title button {
++  appearance: none;
++  border: 0;
++  background: transparent;
++  color: var(--muted-2);
++  cursor: pointer;
++  font-size: 18px;
++  line-height: 1;
++  padding: 0 4px;
++}
++
++.toast-msg {
++  font-size: 12px;
++  color: var(--muted);
++  line-height: 1.5;
++}
++
++.toast.is-success {
++  border-color: rgba(110, 231, 183, 0.55);
++}
++
++.toast.is-error {
++  border-color: rgba(255, 107, 107, 0.55);
++}
++
++.toast.is-info {
++  border-color: rgba(124, 157, 255, 0.55);
++}
++
++@keyframes toast-in {
++  from { transform: translateY(10px); opacity: 0; }
++  to { transform: translateY(0); opacity: 1; }
++}
++
++@keyframes toast-out {
++  from { transform: translateY(0); opacity: 1; }
++  to { transform: translateY(10px); opacity: 0; }
++}
++
+ @media (max-width: 1200px) {
+   .hero-card { grid-column: span 12; }
+   .hero-aside { grid-column: span 12; }
+diff --git a/web/index.html b/web/index.html
+index 1a863f8..c237bf5 100644
+--- a/web/index.html
++++ b/web/index.html
+@@ -3,12 +3,13 @@
+   <head>
+     <meta charset="utf-8" />
+     <meta name="viewport" content="width=device-width, initial-scale=1" />
+-    <meta name="color-scheme" content="dark" />
++    <meta name="color-scheme" content="dark light" />
+     <title>HotelManager | 鏅鸿兘閰掑簵绠＄悊涓灑</title>
+-    <link rel="stylesheet" href="assets/styles.css?v=20251231" />
+-    <script src="assets/app.js?v=20251231" defer></script>
++    <link rel="stylesheet" href="assets/styles.css?v=20260101" />
++    <script src="assets/app.js?v=20260101" defer></script>
+   </head>
+   <body>
++    <a class="skip-link" href="#main">璺冲埌涓诲唴瀹?/a>
+     <div class="app">
+       <header class="topbar">
+         <div class="brand">
+@@ -19,20 +20,23 @@
+           </div>
+         </div>
+         <nav class="nav" aria-label="涓诲鑸?>
+-          <a href="#">鎬昏</a>
+-          <a href="#">鎴挎€?/a>
+-          <a href="#">棰勮</a>
+-          <a href="#">浣忓</a>
+-          <a href="#">鎶ヨ〃</a>
++          <a href="#overview">鎬昏</a>
++          <a href="#rooms">鎴挎€?/a>
++          <a href="#bookings">棰勮</a>
++          <a href="#guests">浣忓</a>
++          <a href="#reports">鎶ヨ〃</a>
+         </nav>
+         <div class="actions">
+           <button class="btn btn-ghost js-import" type="button">瀵煎叆蹇収</button>
+-          <button class="btn btn-primary js-confetti" type="button">鐢熸垚鏃ユ姤</button>
++          <button class="btn btn-ghost js-theme" type="button" aria-label="鍒囨崲涓婚" aria-pressed="false">
++            涓婚
++          </button>
++          <button class="btn btn-primary js-confetti js-report" type="button">鐢熸垚鏃ユ姤</button>
+         </div>
+       </header>
+ 
+-      <main class="main">
+-        <section class="hero">
++      <main class="main" id="main">
++        <section class="hero" id="overview">
+           <div class="card hero-card fade-up" style="--delay: 0.05s">
+             <h1>璁╂瘡涓€闂存埧閮解€滆鐪嬭鈥?/h1>
+             <p>
+@@ -55,26 +59,26 @@
+             <div class="confetti-layer" aria-hidden="true"></div>
+             <div>
+               <div class="card-title">浠婃棩姒傝</div>
+-              <div class="card-sub">2025-12-19 路 鍛ㄤ簲</div>
++              <div class="card-sub" data-today-label>--</div>
+             </div>
+             <div>
+-              <strong style="font-size: 26px;">87%</strong>
++              <strong style="font-size: 26px;" data-occupancy-rate>--%</strong>
+               <div class="card-sub">褰撳墠鍏ヤ綇鐜?/div>
+-              <div class="progress" style="margin-top: 12px;"><span style="width: 87%;"></span></div>
++              <div class="progress" style="margin-top: 12px;"><span data-occupancy-bar style="width: 0%;"></span></div>
+             </div>
+             <div class="room-item" style="margin-top: 6px;">
+               <div class="room-meta">
+                 <strong>浠婃棩鍒板簵</strong>
+                 <span>棰勮 18:00 涔嬪墠瀹屾垚鍏ヤ綇</span>
+               </div>
+-              <span class="status-pill active">12 缁?/span>
++              <span class="status-pill active" data-arrivals>--</span>
+             </div>
+             <div class="room-item">
+               <div class="room-meta">
+                 <strong>绂诲簵鎻愰啋</strong>
+                 <span>12:00 鍓嶅畬鎴愰€€鎴?/span>
+               </div>
+-              <span class="status-pill alert">4 闂?/span>
++              <span class="status-pill alert" data-departures>--</span>
+             </div>
+           </aside>
+         </section>
+@@ -103,10 +107,10 @@
+         </section>
+ 
+         <section class="bento">
+-          <div class="card span-6 fade-up" style="--delay: 0.16s">
++          <div class="card span-6 fade-up" style="--delay: 0.16s" id="reports">
+             <div class="card-title">鏀跺叆鑴夌粶</div>
+             <div class="card-sub">杩?14 鏃ユ埧鏅氭敹鍏ヨ秼鍔?/div>
+-            <div class="chart" aria-hidden="true">
++            <div class="chart" aria-hidden="true" data-chart="revenue">
+               <svg viewBox="0 0 400 220" preserveAspectRatio="none">
+                 <defs>
+                   <linearGradient id="line" x1="0" x2="1" y1="0" y2="0">
+@@ -119,45 +123,47 @@
+                   stroke="url(#line)"
+                   stroke-width="4"
+                   points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80"
++                  data-chart-line="revenue"
+                 />
+                 <polyline
+                   fill="rgba(124,157,255,0.2)"
+                   stroke="none"
+                   points="10,180 60,140 110,155 160,110 210,125 260,95 310,120 360,70 390,80 390,220 10,220"
++                  data-chart-fill="revenue"
+                 />
+               </svg>
+             </div>
+           </div>
+ 
+-          <div class="card span-6 fade-up" style="--delay: 0.18s">
++          <div class="card span-6 fade-up" style="--delay: 0.18s" id="rooms">
+             <div class="card-title">鎴挎€佹€昏</div>
+-            <div class="card-sub">瀹炴椂鍙敭 / 缁翠慨 / 寰呮竻娲?/div>
++            <div class="card-sub">鍙敭 / 鍦ㄤ綇 / 缁翠慨锛堝鍏ュ揩鐓у悗鑷姩鍒锋柊锛?/div>
+             <ul class="room-list">
+               <li class="room-item">
+                 <div class="room-meta">
+                   <strong>鍙敭鎴?/strong>
+                   <span>绱т繌 路 棰勮 18:00 鍞絼</span>
+                 </div>
+-                <span class="badge success">58 闂?/span>
++                <span class="badge success" data-room-summary="available">--</span>
+               </li>
+               <li class="room-item">
+                 <div class="room-meta">
+-                  <strong>寰呮竻娲?/strong>
+-                  <span>闇€瀹㈡埧鎺掔彮鏀寔</span>
++                  <strong>鍦ㄤ綇鎴?/strong>
++                  <span>鍚粖鏃ュ凡鍏ヤ綇</span>
+                 </div>
+-                <span class="badge warn">11 闂?/span>
++                <span class="badge warn" data-room-summary="occupied">--</span>
+               </li>
+               <li class="room-item">
+                 <div class="room-meta">
+                   <strong>缁翠慨涓?/strong>
+                   <span>宸ョ▼閮ㄥ凡鎺掓湡</span>
+                 </div>
+-                <span class="badge muted">6 闂?/span>
++                <span class="badge muted" data-room-summary="maintenance">--</span>
+               </li>
+             </ul>
+           </div>
+ 
+-          <div class="card span-7 fade-up" style="--delay: 0.2s">
++          <div class="card span-7 fade-up" style="--delay: 0.2s" id="bookings">
+             <div class="card-title">鏈€鏂伴璁㈣妭鎷?/div>
+             <div class="card-sub">瀵煎叆蹇収鍚庡睍绀烘渶杩戠殑 reserved 棰勮锛堟渶澶?3 鏉★級</div>
+             <ul class="booking-list" data-booking-list="latest">
+@@ -198,7 +204,7 @@
+             </div>
+           </div>
+ 
+-          <div class="card span-4 fade-up" style="--delay: 0.24s">
++          <div class="card span-4 fade-up" style="--delay: 0.24s" id="guests">
+             <div class="card-title">浣忓娲炲療</div>
+             <div class="card-sub">鍙ｇ涓庤瘎鍒嗚秼鍔?/div>
+             <div style="margin-top: 14px; display: grid; gap: 12px;">
+@@ -310,5 +316,6 @@
+         </section>
+       </main>
+     </div>
++    <div class="toast-stack" data-toast-stack aria-live="polite" aria-relevant="additions"></div>
+   </body>
+ </html>

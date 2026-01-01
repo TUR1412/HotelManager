@@ -10,6 +10,12 @@
 2. CSS：`web/assets/styles.css`
 3. JS：`web/assets/app.js`
 
+## 交互速查
+
+- 主题切换：右上角「主题」按钮，一键切换深色/浅色（会记忆偏好）。
+- 日报导出：右上角「生成日报」，导出 Markdown 日报（本地生成，不联网）。
+- 键盘快捷键：`I` 导入快照 / `G` 生成日报 / `T` 切换主题
+
 ## 导入数据快照（推荐）
 
 1. 生成快照：
@@ -22,6 +28,7 @@ python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json 
 3. 点击右上角“导入快照”，或拖拽 `snapshot.json` 到页面导入区域
 
 > 前端会校验 `schema_version`；目前兼容 `schema_version=1`。
+> 导入成功后会刷新 KPI、最新预订、入住率/到店/离店、房态总览与收入曲线。
 
 ## 设计关键词
 

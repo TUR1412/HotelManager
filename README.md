@@ -1,3 +1,12 @@
+```text
+ _   _       _       _ __  __                                   
+| | | | ___ | |_ ___| |  \/  | __ _ _ __   __ _  __ _  ___ _ __ 
+| |_| |/ _ \| __/ _ \ | |\/| |/ _` | '_ \ / _` |/ _` |/ _ \ '__|
+|  _  | (_) | ||  __/ | |  | | (_| | | | | (_| | (_| |  __/ |   
+|_| |_|\___/ \__\___|_|_|  |_|\__,_|_| |_|\__,_|\__, |\___|_|   
+                                                |___/           
+```
+
 # HotelManager
 
 <p align="center">
@@ -7,6 +16,8 @@
 ![CI](https://github.com/TUR1412/HotelManager/actions/workflows/ci.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB)
 ![SQLite](https://img.shields.io/badge/SQLite-Local%20First-003B57)
+![Ruff](https://img.shields.io/badge/Ruff-0.14.10-261230)
+![WebUI](https://img.shields.io/badge/WebUI-Static%20Dashboard-7c9dff)
 
 一个轻量、可扩展的酒店管理引擎：**CLI + SQLite + 可视化静态 UI**。  
 强调“**可运行、可测试、可扩展、可审计**”，并用世界级 UI 规范定义管理台体验基线。
@@ -31,12 +42,12 @@
 
 ## 核心亮点
 
-- **零运行时依赖**：仅 Python 标准库（`sqlite3` + `argparse`）
-- **领域层稳固**：CLI / 服务层 / 仓储层 / Schema 分离
-- **业务规则可验证**：预订冲突检测（闭开区间 `[start, end)`）
-- **历史金额快照**：房价调整不影响已创建预订
-- **统计升级**：收入统计 + 入住率统计（按已售房晚占比）
-- **UI 体验基线**：Bento Grid / 玻璃拟态 / 微动效 / 高可读性
+- 🚀 **零运行时依赖**：仅 Python 标准库（`sqlite3` + `argparse`）
+- 🧱 **领域层稳固**：CLI / 服务层 / 仓储层 / Schema 分离
+- 🛡️ **业务规则可验证**：预订冲突检测（闭开区间 `[start, end)`）
+- 💾 **历史金额快照**：房价调整不影响已创建预订
+- 📈 **统计升级**：收入统计 + 入住率统计（按已售房晚占比）
+- ✨ **UI 体验基线**：Bento Grid / 玻璃拟态 / 微动效 / 高可读性 / 主题切换 / 日报导出
 
 ---
 
@@ -89,8 +100,10 @@ python -m hotelmanager export snapshot --db hotelmanager.db --out snapshot.json 
 
 - **Bento Grid**：信息模块化、层级明确
 - **玻璃拟态**：卡片层次与空间感
-- **动效编排**：交错入场 + 微交互 + Confetti
+- **动效编排**：交错入场 + 微交互 + Confetti + Toast
 - **高可读性**：对比度满足 WCAG AA
+- **数据驱动**：入住率 / 到店 / 离店 / 房态与收入曲线基于快照实时计算
+- **离线日报**：一键导出 Markdown 日报（适合留档/同步）
 
 详细说明见：`docs/UI.md`。
 
@@ -186,6 +199,7 @@ flowchart LR
   CLI[CLI] --> DB[(SQLite)]
   CLI -->|export snapshot| JSON[snapshot.json]
   JSON --> WebUI[Web UI Import]
+  WebUI -->|export daily report| MD[daily_report.md]
 ```
 
 设计与分层结构说明见：`docs/ARCHITECTURE.md`
